@@ -2859,11 +2859,12 @@ function doGet(e) {
             confirmCallback = onConfirm;
             const okBtn = document.getElementById('confirm-ok-btn');
             okBtn.onclick = () => {
+                const action = confirmCallback;
                 closeConfirmModal();
-                if (confirmCallback) confirmCallback();
+                if (typeof action === 'function') action();
             };
             document.getElementById('confirm-modal').classList.remove('hidden');
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
         function closeConfirmModal() {
@@ -2873,20 +2874,33 @@ function doGet(e) {
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const styles = {
-                success: 'bg-emerald-600 text-white',
-                error: 'bg-rose-600 text-white',
-                info: 'bg-slate-800 text-white'
+            if (!container) return;
+
+            const colorStyles = {
+                success: 'bg-emerald-600 text-white border-emerald-500',
+                error: 'bg-rose-600 text-white border-rose-500',
+                info: 'bg-slate-800 text-white border-slate-700'
             };
-            toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2 transition-all transform translate-y-0 opacity-100 ${styles[type] || styles.info}`;
-            toast.textContent = message;
+            const iconNames = {
+                success: 'check-circle-2',
+                error: 'alert-circle',
+                info: 'info'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border text-xs sm:text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 ${colorStyles[type] || colorStyles.info}`;
+            toast.innerHTML = `<i data-lucide="${iconNames[type] || 'info'}" class="w-4 h-4 shrink-0"></i><span>${escapeHtml(message)}</span>`;
             container.appendChild(toast);
+            if (window.lucide) lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
 
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 3200);
         }
 
         function escapeHtml(str) {
