@@ -85,10 +85,10 @@
     <div id="app-shell" class="hidden min-h-screen flex flex-col">
         <!-- トップナビゲーションバー（1段目：タイトル独立表示 ／ 2段目：連携・アカウント ／ 3段目：業務アクション） -->
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 space-y-2">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 space-y-2.5">
 
                 <!-- 1段目: システムロゴ＆タイトルのみを独立してフル幅表示 -->
-                <div class="flex items-center justify-between w-full pb-1.5 border-b border-slate-800">
+                <div class="flex items-center justify-between w-full pb-2 border-b border-slate-800">
                     <div class="flex items-center space-x-2.5 min-w-0">
                         <div class="bg-blue-600 p-1.5 sm:p-2 rounded-lg shadow-inner shrink-0">
                             <i data-lucide="boxes" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
@@ -100,39 +100,39 @@
                     </div>
                 </div>
 
-                <!-- 2段目＆3段目ラッパー（スマホは2段目・3段目で縦並び、PCは横並び整列） -->
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+                <!-- 2段目＆3段目ラッパー（スマホは2段目・3段目で縦並び、PCは左右両端に整列） -->
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5">
 
                     <!-- 2段目: スプレッドシート直接編集＆連携設定 ＋ パスワード変更・ロック -->
-                    <div class="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 w-full lg:w-auto bg-slate-800/70 lg:bg-transparent p-1 lg:p-0 rounded-lg border border-slate-700/70 lg:border-0">
+                    <div class="flex flex-wrap items-center justify-between sm:justify-start gap-2 w-full lg:w-auto bg-slate-800/70 lg:bg-transparent p-1.5 lg:p-0 rounded-lg border border-slate-700/70 lg:border-0">
                         <div class="flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial">
-                            <button onclick="openDirectSpreadsheet()" title="Googleスプレッドシートを直接開いて編集" class="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-2.5 py-1.5 bg-emerald-700/90 hover:bg-emerald-600 text-white rounded-md lg:rounded-lg transition text-xs font-semibold border border-emerald-500/50 shadow-2xs whitespace-nowrap">
+                            <button onclick="openDirectSpreadsheet()" title="Googleスプレッドシートを直接開いて編集" class="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-1.5 bg-emerald-700/90 hover:bg-emerald-600 text-white rounded-md lg:rounded-lg transition text-xs font-semibold border border-emerald-500/50 shadow-2xs whitespace-nowrap">
                                 <i data-lucide="external-link" class="w-3.5 h-3.5 text-emerald-200 shrink-0"></i>
                                 <span>スプレッドシート</span>
                             </button>
-                            <button onclick="openSheetsModal()" id="sheets-status-btn" title="Googleスプレッドシート連携設定" class="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-2.5 py-1.5 bg-slate-800 lg:bg-transparent text-slate-200 hover:text-white hover:bg-slate-700 lg:hover:bg-slate-800 rounded-md lg:rounded-lg transition text-xs font-medium border border-slate-600 lg:border-slate-700 whitespace-nowrap">
+                            <button onclick="openSheetsModal()" id="sheets-status-btn" title="Googleスプレッドシート連携設定" class="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-md lg:rounded-lg transition text-xs font-medium border border-slate-600 lg:border-slate-700 whitespace-nowrap">
                                 <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
                                 <span>連携設定</span>
                                 <span id="sheets-sync-dot" class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span>
                             </button>
                         </div>
 
-                        <div class="h-5 w-px bg-slate-700 mx-0.5 shrink-0"></div>
+                        <div class="hidden sm:block h-5 w-px bg-slate-700 mx-0.5 shrink-0"></div>
 
                         <div class="flex items-center space-x-1.5 shrink-0">
-                            <button onclick="openPasswordModal()" title="パスワード変更" class="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md lg:rounded-lg transition whitespace-nowrap">
+                            <button onclick="openPasswordModal()" title="パスワード変更" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md lg:rounded-lg transition whitespace-nowrap">
                                 <i data-lucide="key-round" class="w-3.5 h-3.5 text-blue-400 shrink-0"></i>
                                 <span class="hidden sm:inline">パスワード変更</span>
                             </button>
-                            <button onclick="logout()" title="ロック（ログアウト）" class="flex items-center gap-1 px-2.5 py-1.5 text-xs text-rose-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md lg:rounded-lg transition whitespace-nowrap">
+                            <button onclick="logout()" title="ロック（ログアウト）" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs text-rose-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md lg:rounded-lg transition whitespace-nowrap">
                                 <i data-lucide="log-out" class="w-3.5 h-3.5 shrink-0"></i>
                                 <span class="hidden sm:inline">ログアウト</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- 3段目: 主要アクション3ボタン（スマホは均等3列グリッド） -->
-                    <div class="grid grid-cols-3 sm:flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
+                    <!-- 3段目: 主要アクション3ボタン（スマホは均等3列グリッド、PCは横並び） -->
+                    <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full lg:w-auto lg:justify-end">
                         <button onclick="openItemModal()" class="flex items-center justify-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg transition shadow-sm whitespace-nowrap">
                             <i data-lucide="plus-circle" class="w-4 h-4 shrink-0"></i>
                             <span>新規購入登録</span>
@@ -195,54 +195,52 @@
             </section>
 
             <!-- サブナビゲーションタブ（プラモデル・パーツ・塗料を別画面管理） & ユーティリティ -->
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-3">
-                <nav class="flex flex-wrap gap-1.5 bg-slate-200/70 p-1 rounded-xl w-fit">
-                    <button id="tab-KIT" onclick="switchTab('KIT')" class="tab-btn flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-2xs transition">
-                        <i data-lucide="bot" class="w-4 h-4"></i>
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+                <nav class="flex flex-wrap gap-1.5 bg-slate-200/70 p-1 rounded-xl w-full xl:w-fit">
+                    <button id="tab-KIT" onclick="switchTab('KIT')" class="tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-indigo-700 shadow-2xs transition whitespace-nowrap">
+                        <i data-lucide="bot" class="w-4 h-4 shrink-0"></i>
                         <span>プラモデル管理</span>
                     </button>
-                    <button id="tab-PART" onclick="switchTab('PART')" class="tab-btn flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-                        <i data-lucide="wrench" class="w-4 h-4"></i>
+                    <button id="tab-PART" onclick="switchTab('PART')" class="tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap">
+                        <i data-lucide="wrench" class="w-4 h-4 shrink-0"></i>
                         <span>パーツ管理</span>
                     </button>
-                    <button id="tab-PAINT" onclick="switchTab('PAINT')" class="tab-btn flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-                        <i data-lucide="droplets" class="w-4 h-4"></i>
+                    <button id="tab-PAINT" onclick="switchTab('PAINT')" class="tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap">
+                        <i data-lucide="droplets" class="w-4 h-4 shrink-0"></i>
                         <span>塗料管理</span>
                     </button>
-                    <button id="tab-ORDER" onclick="switchTab('ORDER')" class="tab-btn flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    <button id="tab-ORDER" onclick="switchTab('ORDER')" class="tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap">
+                        <i data-lucide="shopping-cart" class="w-4 h-4 shrink-0"></i>
                         <span>購入希望リスト</span>
                         <span id="badge-low-count" class="hidden bg-rose-500 text-white text-[11px] font-bold px-1.5 py-0.2 rounded-full">0</span>
                     </button>
-                    <button id="tab-HISTORY" onclick="switchTab('HISTORY')" class="tab-btn flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-                        <i data-lucide="history" class="w-4 h-4"></i>
+                    <button id="tab-HISTORY" onclick="switchTab('HISTORY')" class="tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap">
+                        <i data-lucide="history" class="w-4 h-4 shrink-0"></i>
                         <span>入出庫履歴</span>
                     </button>
                 </nav>
 
-                <!-- CSV出力 & サンプルリセット -->
-                <div class="flex items-center space-x-2">
                 <!-- CSV一括登録・一括出力 & サンプルリセット -->
                 <div class="flex flex-wrap items-center gap-2">
-                    <button id="btn-csv-import" onclick="openCsvImportModal()" class="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-2xs">
-                        <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <button id="btn-csv-import" onclick="openCsvImportModal()" class="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-2xs whitespace-nowrap">
+                        <i data-lucide="upload" class="w-3.5 h-3.5 shrink-0"></i>
                         <span>CSV一括登録</span>
                     </button>
-                    <button onclick="exportCSV()" class="flex items-center space-x-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs">
-                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <button onclick="exportCSV()" class="flex items-center space-x-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs whitespace-nowrap">
+                        <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
                         <span>CSV一括出力</span>
                     </button>
-                    <button onclick="exportFullJsonBackup()" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs" title="画像データ含む完全バックアップ(JSON)を保存">
-                        <i data-lucide="database-backup" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <button onclick="exportFullJsonBackup()" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs whitespace-nowrap" title="画像データ含む完全バックアップ(JSON)を保存">
+                        <i data-lucide="database-backup" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
                         <span>JSON保存</span>
                     </button>
-                    <label class="cursor-pointer flex items-center space-x-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs" title="画像データ含む完全バックアップ(JSON)から復元">
-                        <i data-lucide="folder-up" class="w-3.5 h-3.5 text-blue-600"></i>
+                    <label class="cursor-pointer flex items-center space-x-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs whitespace-nowrap" title="画像データ含む完全バックアップ(JSON)から復元">
+                        <i data-lucide="folder-up" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
                         <span>JSON復元</span>
                         <input type="file" id="json-restore-input" accept=".json,application/json" onchange="importFullJsonBackup(event)" class="hidden">
                     </label>
-                    <button onclick="confirmResetDemoData()" class="flex items-center space-x-1.5 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-300 text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs" title="初期サンプルデータに戻す">
-                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <button onclick="confirmResetDemoData()" class="flex items-center space-x-1.5 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-300 text-xs font-medium px-3 py-2 rounded-lg transition shadow-2xs whitespace-nowrap" title="初期サンプルデータに戻す">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 shrink-0"></i>
                         <span>サンプル初期化</span>
                     </button>
                 </div>
@@ -1293,7 +1291,7 @@ function doGet(e) {
 
             // タブボタン見た目更新
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = 'tab-btn flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition';
+                btn.className = 'tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap';
             });
             const activeBtn = document.getElementById('tab-' + tabName);
             if (activeBtn) {
@@ -1304,7 +1302,7 @@ function doGet(e) {
                     ORDER: 'text-rose-700',
                     HISTORY: 'text-slate-900'
                 };
-                activeBtn.className = `tab-btn flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-semibold bg-white ${colorMap[tabName] || 'text-blue-700'} shadow-2xs transition`;
+                activeBtn.className = `tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white ${colorMap[tabName] || 'text-blue-700'} shadow-2xs transition whitespace-nowrap`;
             }
 
             // ビュー表示切替
