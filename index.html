@@ -83,52 +83,70 @@
 
     <!-- アプリケーション本体 -->
     <div id="app-shell" class="hidden min-h-screen flex flex-col">
-        <!-- トップナビゲーションバー -->
+        <!-- トップナビゲーションバー（1段目：タイトル独立表示 ／ 2段目：連携・アカウント ／ 3段目：業務アクション） -->
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <!-- システムロゴ＆タイトル -->
-                <div class="flex items-center space-x-3">
-                    <div class="bg-blue-600 p-2 rounded-lg shadow-inner">
-                        <i data-lucide="boxes" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <h1 class="text-lg sm:text-xl font-bold tracking-tight">P在庫管理システム</h1>
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 space-y-2">
+
+                <!-- 1段目: システムロゴ＆タイトルのみを独立してフル幅表示 -->
+                <div class="flex items-center justify-between w-full pb-1.5 border-b border-slate-800">
+                    <div class="flex items-center space-x-2.5 min-w-0">
+                        <div class="bg-blue-600 p-1.5 sm:p-2 rounded-lg shadow-inner shrink-0">
+                            <i data-lucide="boxes" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
                         </div>
-                        <p class="text-xs text-slate-400 hidden sm:block">プラモデル・パーツ・塗料 統合在庫管理</p>
+                        <div class="min-w-0 flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+                            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white truncate">P在庫管理システム</h1>
+                            <p class="text-[11px] sm:text-xs text-slate-400 truncate">プラモデル・パーツ・塗料 在庫管理</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- クイックアクションボタン -->
-                <div class="flex items-center space-x-2">
-                    <button onclick="openStockModal('ADJUST')" class="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-2 rounded-lg transition shadow-sm">
-                        <i data-lucide="clipboard-check" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">実在庫調整</span>
-                    </button>
-                    <button onclick="openStockModal('OUT')" class="flex items-center space-x-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-2 rounded-lg transition shadow-sm">
-                        <i data-lucide="arrow-up-from-line" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">出庫・消費</span>
-                    </button>
-                    <button onclick="openItemModal()" class="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-2 rounded-lg transition shadow-sm">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span>新規購入登録</span>
-                    </button>
-                    <div class="h-6 w-px bg-slate-700 mx-1"></div>
-                    <button onclick="openDirectSpreadsheet()" title="Googleスプレッドシートを直接開いて編集" class="flex items-center space-x-1.5 px-2.5 py-2 bg-emerald-700/80 hover:bg-emerald-600 text-white rounded-lg transition text-xs font-semibold border border-emerald-500/50 shadow-2xs">
-                        <i data-lucide="external-link" class="w-4 h-4 text-emerald-200"></i>
-                        <span class="hidden md:inline">スプレッドシート</span>
-                    </button>
-                    <button onclick="openSheetsModal()" id="sheets-status-btn" title="Googleスプレッドシート連携設定" class="flex items-center space-x-1.5 px-2.5 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition text-xs font-medium border border-slate-700">
-                        <i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i>
-                        <span class="hidden lg:inline">連携設定</span>
-                        <span id="sheets-sync-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    </button>
-                    <button onclick="openPasswordModal()" title="パスワード変更" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition">
-                        <i data-lucide="key-round" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="logout()" title="ロック（ログアウト）" class="p-2 text-slate-300 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </button>
+                <!-- 2段目＆3段目ラッパー（スマホは2段目・3段目で縦並び、PCは横並び整列） -->
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+
+                    <!-- 2段目: スプレッドシート直接編集＆連携設定 ＋ パスワード変更・ロック -->
+                    <div class="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 w-full lg:w-auto bg-slate-800/70 lg:bg-transparent p-1 lg:p-0 rounded-lg border border-slate-700/70 lg:border-0">
+                        <div class="flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial">
+                            <button onclick="openDirectSpreadsheet()" title="Googleスプレッドシートを直接開いて編集" class="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-2.5 py-1.5 bg-emerald-700/90 hover:bg-emerald-600 text-white rounded-md lg:rounded-lg transition text-xs font-semibold border border-emerald-500/50 shadow-2xs whitespace-nowrap">
+                                <i data-lucide="external-link" class="w-3.5 h-3.5 text-emerald-200 shrink-0"></i>
+                                <span>スプレッドシート</span>
+                            </button>
+                            <button onclick="openSheetsModal()" id="sheets-status-btn" title="Googleスプレッドシート連携設定" class="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-2.5 py-1.5 bg-slate-800 lg:bg-transparent text-slate-200 hover:text-white hover:bg-slate-700 lg:hover:bg-slate-800 rounded-md lg:rounded-lg transition text-xs font-medium border border-slate-600 lg:border-slate-700 whitespace-nowrap">
+                                <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                                <span>連携設定</span>
+                                <span id="sheets-sync-dot" class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span>
+                            </button>
+                        </div>
+
+                        <div class="h-5 w-px bg-slate-700 mx-0.5 shrink-0"></div>
+
+                        <div class="flex items-center space-x-1.5 shrink-0">
+                            <button onclick="openPasswordModal()" title="パスワード変更" class="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md lg:rounded-lg transition whitespace-nowrap">
+                                <i data-lucide="key-round" class="w-3.5 h-3.5 text-blue-400 shrink-0"></i>
+                                <span class="hidden sm:inline">パスワード変更</span>
+                            </button>
+                            <button onclick="logout()" title="ロック（ログアウト）" class="flex items-center gap-1 px-2.5 py-1.5 text-xs text-rose-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md lg:rounded-lg transition whitespace-nowrap">
+                                <i data-lucide="log-out" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span class="hidden sm:inline">ログアウト</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3段目: 主要アクション3ボタン（スマホは均等3列グリッド） -->
+                    <div class="grid grid-cols-3 sm:flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
+                        <button onclick="openItemModal()" class="flex items-center justify-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg transition shadow-sm whitespace-nowrap">
+                            <i data-lucide="plus-circle" class="w-4 h-4 shrink-0"></i>
+                            <span>新規購入登録</span>
+                        </button>
+                        <button onclick="openStockModal('ADJUST')" class="flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg transition shadow-sm whitespace-nowrap">
+                            <i data-lucide="clipboard-check" class="w-4 h-4 shrink-0"></i>
+                            <span>実在庫調整</span>
+                        </button>
+                        <button onclick="openStockModal('OUT')" class="flex items-center justify-center space-x-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg transition shadow-sm whitespace-nowrap">
+                            <i data-lucide="arrow-up-from-line" class="w-4 h-4 shrink-0"></i>
+                            <span>出庫・消費</span>
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </header>
