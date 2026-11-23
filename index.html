@@ -50,8 +50,20 @@
     <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
         <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-700/50">
             <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 p-6 text-center text-white">
-                <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/30 mb-3">
-                    <i data-lucide="boxes" class="w-8 h-8 text-white"></i>
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/30 mb-3">
+                    <!-- プラモデルの箱をイメージしたカスタムSVGアイコン -->
+                    <svg viewBox="0 0 64 64" class="w-10 h-10 text-white" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <!-- 外箱（平たいプラモデル化粧箱） -->
+                        <path d="M8 22L32 10L56 22V42L32 54L8 42V22Z" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+                        <!-- 上蓋のフチ線（キャラメル箱・かぶせ蓋表現） -->
+                        <path d="M8 22L32 34L56 22" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+                        <path d="M32 34V54" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                        <!-- 蓋側面の折り返しライン -->
+                        <path d="M8 27.5L32 39.5L56 27.5" stroke="currentColor" stroke-width="1.8" stroke-dasharray="3 2" opacity="0.85"/>
+                        <!-- 天面のプラモデル・ランナー（パーツ枠）モチーフ -->
+                        <path d="M22 21L32 16L42 21L32 26L22 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M27 18.5L37 23.5M37 18.5L27 23.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
                 </div>
                 <h1 class="text-xl font-bold tracking-tight">P在庫管理システム</h1>
                 <p class="text-xs text-slate-300 mt-1">プラモデル・パーツ・塗料 専用在庫管理</p>
