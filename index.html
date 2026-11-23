@@ -288,27 +288,10 @@
                     </div>
                 </div>
 
-                <!-- 在庫テーブル -->
+                <!-- 在庫テーブル（スマホ・PC両対応 3行カードリスト構成） -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="px-4 py-3 text-left">状態</th>
-                                    <th class="px-4 py-3 text-center">画像</th>
-                                    <th class="px-4 py-3 text-left">品番 / JAN</th>
-                                    <th class="px-4 py-3 text-left">メーカー / 品名 / 規格 / 入手方法</th>
-                                    <th class="px-4 py-3 text-right">価格</th>
-                                    <th class="px-4 py-3 text-right">現在庫</th>
-                                    <th class="px-4 py-3 text-right">必要在庫</th>
-                                    <th class="px-4 py-3 text-center">クイック入出庫</th>
-                                    <th class="px-4 py-3 text-center">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-tbody" class="divide-y divide-slate-200 bg-white">
-                                <!-- JSで描画 -->
-                            </tbody>
-                        </table>
+                    <div id="inventory-list" class="divide-y divide-slate-200 bg-white">
+                        <!-- JSで3行構成描画 -->
                     </div>
                     <div id="inventory-empty" class="hidden py-12 text-center text-slate-400">
                         <i data-lucide="package-open" class="w-12 h-12 mx-auto mb-2 opacity-40"></i>
@@ -335,24 +318,8 @@
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="px-4 py-3 text-center">画像</th>
-                                    <th class="px-4 py-3 text-left">カテゴリ</th>
-                                    <th class="px-4 py-3 text-left">品番</th>
-                                    <th class="px-4 py-3 text-left">メーカー / 品名</th>
-                                    <th class="px-4 py-3 text-right">現在庫</th>
-                                    <th class="px-4 py-3 text-right">必要在庫</th>
-                                    <th class="px-4 py-3 text-right">推奨購入数</th>
-                                    <th class="px-4 py-3 text-center">アクション</th>
-                                </tr>
-                            </thead>
-                            <tbody id="order-tbody" class="divide-y divide-slate-200">
-                                <!-- JSで描画 -->
-                            </tbody>
-                        </table>
+                    <div id="order-list" class="divide-y divide-slate-200 bg-white">
+                        <!-- JSで3行構成描画 -->
                     </div>
                     <div id="order-empty" class="hidden py-12 text-center text-slate-400">
                         <i data-lucide="check-circle-2" class="w-12 h-12 mx-auto mb-2 text-emerald-500 opacity-60"></i>
@@ -378,23 +345,8 @@
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="px-4 py-3 text-left">日時</th>
-                                    <th class="px-4 py-3 text-left">区分</th>
-                                    <th class="px-4 py-3 text-left">品番</th>
-                                    <th class="px-4 py-3 text-left">品名</th>
-                                    <th class="px-4 py-3 text-right">変動数</th>
-                                    <th class="px-4 py-3 text-right">処理後在庫</th>
-                                    <th class="px-4 py-3 text-left">備考・用途メモ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="history-tbody" class="divide-y divide-slate-200">
-                                <!-- JSで描画 -->
-                            </tbody>
-                        </table>
+                    <div id="history-list" class="divide-y divide-slate-200 bg-white">
+                        <!-- JSで3行構成描画 -->
                     </div>
                     <div id="history-empty" class="hidden py-12 text-center text-slate-400">
                         <i data-lucide="clipboard-list" class="w-12 h-12 mx-auto mb-2 opacity-40"></i>
@@ -1116,7 +1068,7 @@ function doGet(e) {
         let currentScannerTarget = 'ITEM_CODE';
 
         // ==========================================
-        // 初期化処理
+        // 初期化処理 & データ保存
         // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
             loadDataFromStorage();
@@ -1158,7 +1110,7 @@ function doGet(e) {
                 localStorage.setItem(STORAGE_KEY_SPECS, JSON.stringify(specsList));
                 localStorage.setItem(STORAGE_KEY_OUT_REASONS, JSON.stringify(outReasonsList));
             } catch (e) {
-                showToast('ブラウザ保存容量の上限に近づいています。不要な画像を削除してください。', 'error');
+                showToast('ブラウザの保存容量上限に達しました。不要な画像を削除するかJSONバックアップを取ってください。', 'error');
             }
 
             if (!skipCloudSync) {
@@ -1192,7 +1144,6 @@ function doGet(e) {
                 refreshAllUI();
                 showToast('ログインしました', 'success');
 
-                // 起動時スプレッドシート自動読込が有効な場合
                 const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
                 const autoLoad = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) === 'true';
                 if (gasUrl && autoLoad) {
@@ -1405,12 +1356,12 @@ function doGet(e) {
         }
 
         // ==========================================
-        // 在庫テーブル描画 & クイック入出庫
+        // 在庫一覧描画（スマホ・PC共通 3行構成） & クイック入出庫
         // ==========================================
         function renderInventoryTable() {
-            const tbody = document.getElementById('inventory-tbody');
+            const listEl = document.getElementById('inventory-list');
             const emptyEl = document.getElementById('inventory-empty');
-            if (!tbody) return;
+            if (!listEl) return;
 
             const search = (document.getElementById('filter-search')?.value || '').toLowerCase().trim();
             const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
@@ -1447,7 +1398,7 @@ function doGet(e) {
             });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '';
+                listEl.innerHTML = '';
                 emptyEl.classList.remove('hidden');
                 return;
             }
@@ -1455,24 +1406,24 @@ function doGet(e) {
             emptyEl.classList.add('hidden');
             const meta = getCategoryMeta(currentCategoryTab);
 
-            tbody.innerHTML = filtered.map(item => {
+            listEl.innerHTML = filtered.map(item => {
                 const stock = Number(item.stock);
                 const minStock = Number(item.minStock);
                 let statusBadge = '';
                 if (stock === 0) {
-                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200">在庫切れ</span>`;
+                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200 shrink-0">在庫切れ</span>`;
                 } else if (stock < minStock) {
-                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">要補充</span>`;
+                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">要補充</span>`;
                 } else {
-                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">適正</span>`;
+                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0">適正</span>`;
                 }
 
                 const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-12 h-12 object-cover rounded-lg border border-slate-200 mx-auto cursor-zoom-in hover:opacity-85 transition">`
-                    : `<div class="w-12 h-12 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center mx-auto"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
+                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-85 transition">`
+                    : `<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
 
                 const colorChip = (item.category === 'PAINT' && item.color)
-                    ? `<span class="inline-block w-3.5 h-3.5 rounded-full border border-slate-400 shrink-0 shadow-2xs" style="background-color: ${escapeHtml(item.color)}" title="カラー見本"></span>`
+                    ? `<span class="inline-block w-3.5 h-3.5 rounded-full border border-slate-400 shrink-0 shadow-2xs mt-0.5" style="background-color: ${escapeHtml(item.color)}" title="カラー見本"></span>`
                     : '';
 
                 const priceText = (item.price !== undefined && item.price !== null && item.price !== '' && Number(item.price) > 0)
@@ -1480,52 +1431,60 @@ function doGet(e) {
                     : '-';
 
                 return `
-                    <tr class="hover:bg-slate-50/80 transition align-top">
-                        <td class="px-4 py-3.5 whitespace-nowrap">${statusBadge}</td>
-                        <td class="px-4 py-3.5 text-center">${imgHtml}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <div class="font-mono text-xs font-bold text-slate-800">${escapeHtml(item.code)}</div>
-                            <div class="text-[11px] text-slate-400 mt-1">更新: ${escapeHtml((item.updatedAt || '').split(' ')[0] || '-')}</div>
-                        </td>
-                        <td class="px-4 py-3.5 min-w-[240px] max-w-md space-y-1.5">
-                            <div class="text-xs font-semibold text-slate-500 leading-snug">${escapeHtml(item.maker || 'メーカー未指定')}</div>
-                            <div class="font-bold text-sm text-slate-900 flex items-start gap-1.5 leading-snug break-words whitespace-normal">
-                                ${colorChip ? `<span class="mt-1">${colorChip}</span>` : ''}
-                                <span>${escapeHtml(item.name)}</span>
+                    <div class="p-3.5 sm:p-4 hover:bg-slate-50/80 transition space-y-2.5">
+                        <!-- 1行目: 状態バッジ ・ 品番/JAN ・ メーカー名 ・ 編集/削除ボタン -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center flex-wrap gap-1.5 sm:gap-2 min-w-0">
+                                ${statusBadge}
+                                <span class="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">${escapeHtml(item.code)}</span>
+                                <span class="text-xs font-semibold text-slate-600 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
                             </div>
-                            <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
-                                ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
-                                ${item.acquisition ? `<span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">${escapeHtml(item.acquisition)}</span>` : ''}
-                            </div>
-                            ${item.memo ? `<p class="text-xs text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(item.memo)}</p>` : ''}
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-mono text-xs font-semibold text-slate-700">
-                            ${priceText}
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold text-base ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">
-                            ${stock} <span class="text-xs font-normal text-slate-500">${meta.unit}</span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right text-slate-600 font-medium">
-                            ${minStock} <span class="text-xs text-slate-400">${meta.unit}</span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-center">
-                            <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-2xs">
-                                <button onclick="quickAdjust('${item.id}', -1)" title="1つ出庫 (-1)" class="px-2.5 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-bold transition">-</button>
-                                <span class="w-px h-4 bg-slate-200"></span>
-                                <button onclick="quickAdjust('${item.id}', 1)" title="1つ入庫 (+1)" class="px-2.5 py-1 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-bold transition">+</button>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-center">
-                            <div class="inline-flex items-center space-x-1">
-                                <button type="button" onclick="openItemModal('${item.id}')" title="編集" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                            <div class="flex items-center space-x-1 shrink-0">
+                                <button type="button" onclick="openItemModal('${item.id}')" title="編集" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg border border-slate-200 bg-white transition">
                                     <i data-lucide="edit-3" class="w-4 h-4 pointer-events-none"></i>
                                 </button>
-                                <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                                <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 bg-white transition">
                                     <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
                                 </button>
                             </div>
-                        </td>
-                    </tr>
+                        </div>
+
+                        <!-- 2行目: 商品画像 ・ 品名 ・ 規格/入手方法バッジ/定価 -->
+                        <div class="flex items-start gap-3">
+                            ${imgHtml}
+                            <div class="flex-1 min-w-0 space-y-1.5">
+                                <div class="font-bold text-sm sm:text-base text-slate-900 flex items-start gap-1.5 leading-snug break-words">
+                                    ${colorChip}
+                                    <span>${escapeHtml(item.name)}</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
+                                    ${item.acquisition ? `<span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">${escapeHtml(item.acquisition)}</span>` : ''}
+                                    <span class="text-[11px] px-2 py-0.5 rounded bg-slate-50 text-slate-700 font-mono font-semibold border border-slate-200">定価: ${priceText}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3行目: 現在庫 / 必要在庫 ・ クイック入出庫ボタン ・ 更新日/メモ -->
+                        <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center justify-between sm:justify-start gap-3">
+                                <div class="flex items-baseline gap-2.5">
+                                    <span class="text-xs text-slate-500">現在庫: <strong class="text-base sm:text-lg font-bold ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">${stock}</strong><span class="text-xs text-slate-500 ml-0.5">${meta.unit}</span></span>
+                                    <span class="text-xs text-slate-400">/</span>
+                                    <span class="text-xs text-slate-500">必要在庫: <strong class="font-semibold text-slate-700">${minStock}</strong><span class="text-xs text-slate-400 ml-0.5">${meta.unit}</span></span>
+                                </div>
+                                <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-2xs shrink-0">
+                                    <button type="button" onclick="quickAdjust('${item.id}', -1)" title="1つ出庫 (-1)" class="px-3 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-bold text-sm transition">-</button>
+                                    <span class="w-px h-4 bg-slate-200"></span>
+                                    <button type="button" onclick="quickAdjust('${item.id}', 1)" title="1つ入庫 (+1)" class="px-3 py-1 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-sm transition">+</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between sm:justify-end gap-2 min-w-0">
+                                ${item.memo ? `<p class="text-xs text-slate-600 bg-slate-50 px-2.5 py-1 rounded border border-slate-100 truncate max-w-full sm:max-w-xs" title="${escapeHtml(item.memo)}">${escapeHtml(item.memo)}</p>` : ''}
+                                <span class="text-[11px] text-slate-400 shrink-0">更新: ${escapeHtml((item.updatedAt || '').split(' ')[0] || '-')}</span>
+                            </div>
+                        </div>
+                    </div>
                 `;
             }).join('');
         }
@@ -1562,71 +1521,80 @@ function doGet(e) {
         }
 
         // ==========================================
-        // 購入希望リスト描画
+        // 購入希望リスト描画（3行構成）
         // ==========================================
         function renderOrderList() {
-            const tbody = document.getElementById('order-tbody');
+            const listEl = document.getElementById('order-list');
             const emptyEl = document.getElementById('order-empty');
-            if (!tbody) return;
+            if (!listEl) return;
 
             const lowItems = items.filter(i => Number(i.stock) < Number(i.minStock));
             if (lowItems.length === 0) {
-                tbody.innerHTML = '';
+                listEl.innerHTML = '';
                 emptyEl.classList.remove('hidden');
                 return;
             }
 
             emptyEl.classList.add('hidden');
-            tbody.innerHTML = lowItems.map(item => {
+            listEl.innerHTML = lowItems.map(item => {
                 const meta = getCategoryMeta(item.category);
                 const stock = Number(item.stock);
                 const minStock = Number(item.minStock);
                 const recommended = Math.max(1, minStock - stock);
 
                 const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-11 h-11 object-cover rounded-lg border border-slate-200 mx-auto cursor-zoom-in">`
-                    : `<div class="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center mx-auto"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
+                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 object-cover rounded-lg border border-slate-200 shrink-0 cursor-zoom-in">`
+                    : `<div class="w-14 h-14 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
 
                 return `
-                    <tr class="hover:bg-rose-50/40 transition align-top">
-                        <td class="px-4 py-3.5 text-center">${imgHtml}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border ${meta.badgeClass}">
-                                ${meta.label}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap font-mono text-xs font-bold text-slate-800">${escapeHtml(item.code)}</td>
-                        <td class="px-4 py-3.5 min-w-[220px] max-w-md space-y-1">
-                            <div class="text-xs font-semibold text-slate-500">${escapeHtml(item.maker || 'メーカー未指定')}</div>
-                            <div class="font-bold text-sm text-slate-900 leading-snug break-words whitespace-normal">${escapeHtml(item.name)}</div>
-                            ${item.spec ? `<div><span class="inline-block text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">${escapeHtml(item.spec)}</span></div>` : ''}
-                            ${item.memo ? `<p class="text-xs text-slate-600 bg-white/80 px-2 py-1 rounded border border-rose-100 leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(item.memo)}</p>` : ''}
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold text-rose-600">${stock} ${meta.unit}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right text-slate-600">${minStock} ${meta.unit}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold text-emerald-700">+${recommended} ${meta.unit}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-center">
-                            <div class="inline-flex items-center gap-1.5">
-                                <button type="button" onclick="openStockModal('ADJUST', '${item.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-2xs">
-                                    購入反映
-                                </button>
-                                <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
-                                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
-                                </button>
+                    <div class="p-3.5 sm:p-4 hover:bg-rose-50/40 transition space-y-2.5">
+                        <!-- 1行目: カテゴリバッジ ・ 品番 ・ メーカー ・ 削除ボタン -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center flex-wrap gap-1.5 min-w-0">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${meta.badgeClass} shrink-0">${meta.label}</span>
+                                <span class="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">${escapeHtml(item.code)}</span>
+                                <span class="text-xs font-semibold text-slate-600 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
                             </div>
-                        </td>
-                    </tr>
+                            <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 bg-white transition shrink-0">
+                                <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                        </div>
+
+                        <!-- 2行目: 画像 ・ 品名 ・ 規格 -->
+                        <div class="flex items-start gap-3">
+                            ${imgHtml}
+                            <div class="flex-1 min-w-0 space-y-1">
+                                <div class="font-bold text-sm sm:text-base text-slate-900 leading-snug break-words">${escapeHtml(item.name)}</div>
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
+                                    ${item.memo ? `<span class="text-xs text-slate-600 truncate max-w-full">${escapeHtml(item.memo)}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3行目: 現在庫 / 必要在庫 / 推奨購入数 ・ 購入反映ボタン -->
+                        <div class="pt-2 border-t border-rose-100/80 flex items-center justify-between gap-2">
+                            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
+                                <span class="text-slate-600">現在庫: <strong class="text-sm font-bold text-rose-600">${stock}</strong>${meta.unit}</span>
+                                <span class="text-slate-600">必要在庫: <strong class="font-semibold text-slate-800">${minStock}</strong>${meta.unit}</span>
+                                <span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">推奨購入: +${recommended}${meta.unit}</span>
+                            </div>
+                            <button type="button" onclick="openStockModal('ADJUST', '${item.id}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-2xs shrink-0">
+                                購入反映
+                            </button>
+                        </div>
+                    </div>
                 `;
             }).join('');
         }
 
         // ==========================================
-        // 入出庫・棚卸履歴描画
+        // 入出庫・棚卸履歴描画（3行構成）
         // ==========================================
         function renderHistory() {
-            const tbody = document.getElementById('history-tbody');
+            const listEl = document.getElementById('history-list');
             const emptyEl = document.getElementById('history-empty');
-            if (!tbody) return;
+            if (!listEl) return;
 
             const typeFilter = document.getElementById('history-filter-type')?.value || 'ALL';
             let filtered = [...historyLogs];
@@ -1635,20 +1603,20 @@ function doGet(e) {
             }
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '';
+                listEl.innerHTML = '';
                 emptyEl.classList.remove('hidden');
                 return;
             }
 
             emptyEl.classList.add('hidden');
-            tbody.innerHTML = filtered.map(log => {
+            listEl.innerHTML = filtered.map(log => {
                 let badge = '';
                 if (log.type === 'IN') {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">入庫・登録</span>`;
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 shrink-0">入庫・登録</span>`;
                 } else if (log.type === 'OUT') {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">出庫・消費</span>`;
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 shrink-0">出庫・消費</span>`;
                 } else {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">実在庫調整</span>`;
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 shrink-0">実在庫調整</span>`;
                 }
 
                 const qtyNum = Number(log.qty || 0);
@@ -1656,15 +1624,26 @@ function doGet(e) {
                 const qtyClass = qtyNum > 0 ? 'text-emerald-600' : (qtyNum < 0 ? 'text-amber-700' : 'text-slate-600');
 
                 return `
-                    <tr class="hover:bg-slate-50 transition align-top">
-                        <td class="px-4 py-3.5 whitespace-nowrap text-xs font-mono text-slate-500">${escapeHtml(log.timestamp)}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap">${badge}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap font-mono text-xs text-slate-700">${escapeHtml(log.itemCode)}</td>
-                        <td class="px-4 py-3.5 font-medium text-slate-900 min-w-[180px] max-w-xs leading-snug break-words whitespace-normal">${escapeHtml(log.itemName)}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold ${qtyClass}">${qtyText}</td>
-                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-semibold text-slate-800">${log.afterStock}</td>
-                        <td class="px-4 py-3.5 text-xs text-slate-600 min-w-[180px] max-w-sm leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(log.note || '-')}</td>
-                    </tr>
+                    <div class="p-3.5 sm:p-4 hover:bg-slate-50 transition space-y-1.5">
+                        <!-- 1行目: 区分バッジ ・ 品番 ・ 日時 -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                ${badge}
+                                <span class="font-mono text-xs font-semibold text-slate-700 truncate">${escapeHtml(log.itemCode)}</span>
+                            </div>
+                            <span class="text-[11px] font-mono text-slate-400 shrink-0">${escapeHtml(log.timestamp)}</span>
+                        </div>
+                        <!-- 2行目: 品名 -->
+                        <div class="font-bold text-sm text-slate-900 leading-snug break-words">${escapeHtml(log.itemName)}</div>
+                        <!-- 3行目: 変動数 / 処理後在庫 ・ 備考メモ -->
+                        <div class="pt-1 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <div class="flex items-center gap-3 shrink-0">
+                                <span class="text-slate-500">変動: <strong class="font-bold text-sm ${qtyClass}">${qtyText}</strong></span>
+                                <span class="text-slate-500">処理後在庫: <strong class="font-bold text-slate-800">${log.afterStock}</strong></span>
+                            </div>
+                            <span class="text-slate-600 break-words">${escapeHtml(log.note || '-')}</span>
+                        </div>
+                    </div>
                 `;
             }).join('');
         }
