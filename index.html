@@ -1111,17 +1111,40 @@ function doGet(e) {
         ];
 
         const KNOWN_PRODUCT_CATALOG = [
-            { code: '5063043', jan: '4573102630438', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ガンダムエアリアル', price: 1430, spec: '1/144', category: 'KIT' },
-            { code: '5061542', jan: '4573102615428', maker: 'BANDAI SPIRITS', name: 'MG 1/100 サザビー Ver.Ka', price: 9900, spec: '1/100', category: 'KIT' },
-            { code: '5060747', jan: '4573102607478', maker: 'BANDAI SPIRITS', name: 'RG 1/144 νガンダム', price: 4620, spec: '1/144', category: 'KIT' },
-            { code: '5065096', jan: '4573102650962', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ライジングフリーダムガンダム', price: 2640, spec: '1/144', category: 'KIT' },
-            { code: '5066284', jan: '4573102662842', maker: 'BANDAI SPIRITS', name: 'RG 1/144 RX-78-2 ガンダム Ver.2.0', price: 3850, spec: '1/144', category: 'KIT' },
-            { code: 'C-1', jan: '4973028515015', maker: 'GSIクレオス', name: 'Mr.カラー C1 ホワイト (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { code: 'C-2', jan: '4973028515022', maker: 'GSIクレオス', name: 'Mr.カラー C2 ブラック (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { code: 'C-3', jan: '4973028515039', maker: 'GSIクレオス', name: 'Mr.カラー C3 レッド (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { code: 'GS-03', jan: '4582182330039', maker: 'ガイアノーツ', name: 'サーフェイサーエヴォ ブラック 50ml', price: 880, spec: 'サーフェイサー', category: 'PAINT' },
-            { code: 'EX-01', jan: '4582182300018', maker: 'ガイアノーツ', name: 'Ex-01 Ex-ホワイト 50ml', price: 990, spec: 'ラッカー系 15ml', category: 'PAINT' },
-            { code: 'SPN-120', jan: '4562349879120', maker: 'ゴッドハンド', name: 'アルティメットニッパー 5.0 SPN-120', price: 5940, spec: '工具・消耗品', category: 'PART' }
+            { code: '5063043', jan: '4573102630438', maker: 'BANDAI SPIRITS (バンダイ)', name: 'HG 1/144 ガンダムエアリアル', price: 1430, spec: '1/144', category: 'KIT' },
+            { code: '5061542', jan: '4573102615428', maker: 'BANDAI SPIRITS (バンダイ)', name: 'MG 1/100 サザビー Ver.Ka', price: 9900, spec: '1/100', category: 'KIT' },
+            { code: '5060747', jan: '4573102607478', maker: 'BANDAI SPIRITS (バンダイ)', name: 'RG 1/144 νガンダム', price: 4620, spec: '1/144', category: 'KIT' },
+            { code: '5065096', jan: '4573102650962', maker: 'BANDAI SPIRITS (バンダイ)', name: 'HG 1/144 ライジングフリーダムガンダム', price: 2640, spec: '1/144', category: 'KIT' },
+            { code: '5066284', jan: '4573102662842', maker: 'BANDAI SPIRITS (バンダイ)', name: 'RG 1/144 RX-78-2 ガンダム Ver.2.0', price: 3850, spec: '1/144', category: 'KIT' },
+            { code: 'C-1', jan: '4973028515015', maker: 'GSIクレオス (Mr.HOBBY)', name: 'Mr.カラー C1 ホワイト (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'C-2', jan: '4973028515022', maker: 'GSIクレオス (Mr.HOBBY)', name: 'Mr.カラー C2 ブラック (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'C-3', jan: '4973028515039', maker: 'GSIクレオス (Mr.HOBBY)', name: 'Mr.カラー C3 レッド (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'C-8', jan: '4973028515084', maker: 'GSIクレオス (Mr.HOBBY)', name: 'Mr.カラー C8 シルバー (銀)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'GS-01', jan: '4582182330015', maker: 'ガイアノーツ (Gaianotes)', name: 'サーフェイサーエヴォ 50ml', price: 770, spec: 'サーフェイサー', category: 'PAINT' },
+            { code: 'GS-02', jan: '4582182330022', maker: 'ガイアノーツ (Gaianotes)', name: 'サーフェイサーエヴォ ホワイト 50ml', price: 880, spec: 'サーフェイサー', category: 'PAINT' },
+            { code: 'GS-03', jan: '4582182330039', maker: 'ガイアノーツ (Gaianotes)', name: 'サーフェイサーエヴォ ブラック 50ml', price: 880, spec: 'サーフェイサー', category: 'PAINT' },
+            { code: 'EX-01', jan: '4582182300018', maker: 'ガイアノーツ (Gaianotes)', name: 'Ex-01 Ex-ホワイト 50ml', price: 990, spec: 'ラッカー系 15ml', category: 'PAINT' },
+            { code: 'EX-02', jan: '4582182300025', maker: 'ガイアノーツ (Gaianotes)', name: 'Ex-02 Ex-ブラック 50ml', price: 990, spec: 'ラッカー系 15ml', category: 'PAINT' },
+            { code: 'SPN-120', jan: '4562349879120', maker: 'ゴッドハンド (GodHand)', name: 'アルティメットニッパー 5.0 SPN-120', price: 5940, spec: '工具・消耗品', category: 'PART' }
+        ];
+
+        // GS1事業者コード（JAN先頭桁）による模型・塗料メーカー判定テーブル
+        const JAN_MAKER_PREFIX_MAP = [
+            { prefix: '4573102', maker: 'BANDAI SPIRITS (バンダイ)' },
+            { prefix: '4549660', maker: 'BANDAI SPIRITS (バンダイ)' },
+            { prefix: '4543112', maker: 'BANDAI SPIRITS (バンダイ)' },
+            { prefix: '4902425', maker: 'BANDAI SPIRITS (バンダイ)' },
+            { prefix: '4950344', maker: 'タミヤ (TAMIYA)' },
+            { prefix: '4967834', maker: 'ハセガワ (Hasegawa)' },
+            { prefix: '4934054', maker: 'コトブキヤ (KOTOBUKIYA)' },
+            { prefix: '4973028', maker: 'GSIクレオス (Mr.HOBBY)' },
+            { prefix: '4582182', maker: 'ガイアノーツ (Gaianotes)' },
+            { prefix: '4905083', maker: 'アオシマ (AOSHIMA)' },
+            { prefix: '4545784', maker: 'マックスファクトリー' },
+            { prefix: '4580416', maker: 'グッドスマイルカンパニー' },
+            { prefix: '4580590', maker: 'グッドスマイルカンパニー' },
+            { prefix: '4943209', maker: 'ウェーブ (WAVE)' },
+            { prefix: '4562349', maker: 'ゴッドハンド (GodHand)' }
         ];
 
         const INITIAL_LOGS = [
@@ -1150,678 +1173,105 @@ function doGet(e) {
         ];
 
         // ==========================================
-        // アプリケーション状態変数
+        // 2段階自動登録（高精度版）:
+        // 第1段階: GS1事業者コード判定 ＋ JANコードからメーカー・型番・品名・価格を自動登録
+        // 第2段階: JANで取得できない場合、メーカーと品番（表記ゆれ正規化＋複数クエリ）でWeb探索
         // ==========================================
-        let items = [];
-        let historyLogs = [];
-        let makersList = [];
-        let specsList = [];
-        let outReasonsList = [];
-        let currentTab = 'KIT';
-        let currentCategoryTab = 'KIT';
-        let currentEditingImage = '';
-        let confirmCallback = null;
-        let html5QrScannerInstance = null;
-        let currentScannerTarget = 'ITEM_JAN';
+        function normalizeCodeStr(str) {
+            return String(str || '')
+                .replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+                .replace(/[\s\-_‐－―]/g, '')
+                .toUpperCase()
+                .trim();
+        }
 
-        // ==========================================
-        // 初期化 & 別端末引き継ぎURLパラメータ処理
-        // ==========================================
-        window.addEventListener('DOMContentLoaded', () => {
-            const importedViaLink = applyDeviceSyncFromUrlParams();
-            loadDataFromStorage();
-            updateSheetsStatusUI();
-            if (window.lucide) {
-                lucide.createIcons();
-            }
+        function detectMakerFromJanPrefix(janCode) {
+            const cleanJan = String(janCode || '').replace(/\D/g, '');
+            if (cleanJan.length < 7) return '';
+            const hit = JAN_MAKER_PREFIX_MAP.find(entry => cleanJan.startsWith(entry.prefix));
+            return hit ? hit.maker : '';
+        }
 
-            if (importedViaLink) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-shell').classList.remove('hidden');
-                switchTab('KIT');
-                refreshAllUI();
-                showToast('引き継ぎURLから連携設定・パスワードを適用しました', 'success');
-                if (localStorage.getItem(STORAGE_KEY_SHEETS_URL)) {
-                    loadFromGoogleSheets(true);
+        function detectMakerFromText(text) {
+            const t = String(text || '');
+            if (/BANDAI|バンダイ/i.test(t)) return 'BANDAI SPIRITS (バンダイ)';
+            if (/TAMIYA|タミヤ/i.test(t)) return 'タミヤ (TAMIYA)';
+            if (/HASEGAWA|ハセガワ/i.test(t)) return 'ハセガワ (Hasegawa)';
+            if (/KOTOBUKIYA|コトブキヤ/i.test(t)) return 'コトブキヤ (KOTOBUKIYA)';
+            if (/CREOS|クレオス|Mr\.カラー|Mr\.HOBBY/i.test(t)) return 'GSIクレオス (Mr.HOBBY)';
+            if (/GAIANOTES|ガイアノーツ|サーフェイサーエヴォ|Ex-/i.test(t)) return 'ガイアノーツ (Gaianotes)';
+            if (/AOSHIMA|アオシマ|青島文化教材社/i.test(t)) return 'アオシマ (AOSHIMA)';
+            if (/マックスファクトリー|MAX\s*FACTORY/i.test(t)) return 'マックスファクトリー';
+            if (/グッドスマイル|GOOD\s*SMILE/i.test(t)) return 'グッドスマイルカンパニー';
+            if (/WAVE|ウェーブ/i.test(t)) return 'ウェーブ (WAVE)';
+            if (/GODHAND|ゴッドハンド/i.test(t)) return 'ゴッドハンド (GodHand)';
+            return '';
+        }
+
+        function cleanProductTitle(rawTitle) {
+            return String(rawTitle || '')
+                .replace(/【[^】]*】/g, ' ')
+                .replace(/\[[^\]]*\]/g, ' ')
+                .replace(/（(?:新品|未開封|在庫あり|即納|取り寄せ|予約|送料無料|メール便)[^）]*）/g, ' ')
+                .replace(/\((?:新品|未開封|在庫あり|即納|取り寄せ|予約|送料無料|メール便)[^)]*\)/g, ' ')
+                .replace(/(?:送料無料|即日発送|新品未開封|プラモデル|塗料|模型用)/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function parseBestCommerceCandidate(rawItems, preferredMaker = '', targetCodeNorm = '') {
+            if (!Array.isArray(rawItems) || rawItems.length === 0) return null;
+
+            // セット品・ジャンク・予約デポジット等のノイズ商品を除外・減点
+            const scored = rawItems.map(entry => {
+                const it = entry.Item || entry;
+                const title = String(it.itemName || it.name || '');
+                const price = Number(it.itemPrice || it.price || 0);
+                let score = 0;
+
+                if (/セット|まとめ|福袋|ジャンク|訳あり|空箱|説明書のみ|ランナーのみ/.test(title)) score -= 50;
+                if (/(HG|MG|RG|PG|EG|SD|1\/\d+|Mr\.|ガイア|タミヤ|ハセガワ|コトブキヤ|デカール|ニッパー)/.test(title)) score += 20;
+                if (preferredMaker) {
+                    const shortMaker = preferredMaker.split(' ')[0].replace(/\(.*\)/, '').trim();
+                    if (shortMaker && title.toUpperCase().includes(shortMaker.toUpperCase())) score += 25;
                 }
-            } else {
-                const pwInput = document.getElementById('login-password');
-                if (pwInput) pwInput.focus();
-            }
-        });
-
-        function applyDeviceSyncFromUrlParams() {
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const syncToken = params.get('sync');
-                if (!syncToken) return false;
-                const decoded = JSON.parse(decodeURIComponent(escape(atob(syncToken))));
-                if (!decoded || typeof decoded !== 'object') return false;
-
-                if (decoded.gasUrl) localStorage.setItem(STORAGE_KEY_SHEETS_URL, decoded.gasUrl);
-                if (decoded.editUrl) localStorage.setItem(STORAGE_KEY_SHEETS_EDIT_URL, decoded.editUrl);
-                if (decoded.password) localStorage.setItem(STORAGE_KEY_PASSWORD, decoded.password);
-                localStorage.setItem(STORAGE_KEY_SHEETS_AUTO, 'true');
-                localStorage.setItem(STORAGE_KEY_SHEETS_AUTO_LOAD, 'true');
-
-                const cleanUrl = window.location.origin + window.location.pathname;
-                window.history.replaceState({}, document.title, cleanUrl);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        }
-
-        function copyDeviceSyncLink() {
-            const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL) || '';
-            const editUrl = localStorage.getItem(STORAGE_KEY_SHEETS_EDIT_URL) || '';
-            const password = getSystemPassword();
-
-            if (!gasUrl) {
-                showToast('先にGoogle Apps Script ウェブアプリURLを設定・保存してください', 'info');
-                return;
-            }
-
-            const payload = { gasUrl, editUrl, password };
-            const token = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-            const baseUrl = window.location.origin + window.location.pathname;
-            const shareUrl = `${baseUrl}?sync=${encodeURIComponent(token)}`;
-
-            const tempInput = document.createElement('input');
-            tempInput.value = shareUrl;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            tempInput.setSelectionRange(0, 99999);
-            try {
-                document.execCommand('copy');
-                showToast('別端末引き継ぎ用URLをコピーしました。他のスマホやPCで開いてください', 'success');
-            } catch (e) {
-                showToast('URLのコピーに失敗しました', 'error');
-            }
-            document.body.removeChild(tempInput);
-        }
-
-        function loadDataFromStorage() {
-            try {
-                const rawItems = localStorage.getItem(STORAGE_KEY_ITEMS);
-                const rawLogs = localStorage.getItem(STORAGE_KEY_LOGS);
-                const rawMakers = localStorage.getItem(STORAGE_KEY_MAKERS);
-                const rawSpecs = localStorage.getItem(STORAGE_KEY_SPECS);
-                const rawOutReasons = localStorage.getItem(STORAGE_KEY_OUT_REASONS);
-
-                items = rawItems ? JSON.parse(rawItems) : JSON.parse(JSON.stringify(INITIAL_ITEMS));
-                historyLogs = rawLogs ? JSON.parse(rawLogs) : JSON.parse(JSON.stringify(INITIAL_LOGS));
-                makersList = rawMakers ? JSON.parse(rawMakers) : [...DEFAULT_MAKERS];
-                specsList = rawSpecs ? JSON.parse(rawSpecs) : [...DEFAULT_SPECS];
-                outReasonsList = rawOutReasons ? JSON.parse(rawOutReasons) : [...DEFAULT_OUT_REASONS];
-            } catch (e) {
-                items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
-                historyLogs = JSON.parse(JSON.stringify(INITIAL_LOGS));
-                makersList = [...DEFAULT_MAKERS];
-                specsList = [...DEFAULT_SPECS];
-                outReasonsList = [...DEFAULT_OUT_REASONS];
-            }
-        }
-
-        function saveData(skipCloudSync = false) {
-            try {
-                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
-                localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(historyLogs));
-                localStorage.setItem(STORAGE_KEY_MAKERS, JSON.stringify(makersList));
-                localStorage.setItem(STORAGE_KEY_SPECS, JSON.stringify(specsList));
-                localStorage.setItem(STORAGE_KEY_OUT_REASONS, JSON.stringify(outReasonsList));
-            } catch (e) {
-                showToast('ブラウザの保存容量上限に達しました。不要な画像を削除してください', 'error');
-            }
-
-            if (!skipCloudSync) {
-                const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
-                const autoSync = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false';
-                if (gasUrl && autoSync) {
-                    syncToGoogleSheets(false);
+                if (targetCodeNorm && normalizeCodeStr(title).includes(targetCodeNorm)) {
+                    score += 30;
                 }
-            }
+                if (price >= 100 && price <= 150000) score += 10;
+
+                return { title, price, score };
+            }).sort((a, b) => b.score - a.score);
+
+            const best = scored[0];
+            if (!best || best.score < -20 || !best.title) return null;
+
+            // 価格の妥当性向上（上位候補の中央値・最頻値を採用して極端な送料込価格を回避）
+            const validPrices = scored
+                .filter(s => s.score >= 0 && s.price >= 100 && s.price <= 150000)
+                .map(s => s.price)
+                .sort((a, b) => a - b);
+            const representativePrice = validPrices.length > 0
+                ? validPrices[Math.floor(validPrices.length / 2)]
+                : best.price;
+
+            const cleanedName = cleanProductTitle(best.title);
+            const detectedMaker = preferredMaker || detectMakerFromText(best.title);
+            const codeMatch = best.title.match(/\b([A-Z]{1,4}-?\d{1,4}|\d{7})\b/);
+            const scaleMatch = best.title.match(/\b(1\/(?:144|100|72|48|35|24|12))\b/);
+            const seriesMatch = best.title.match(/(?:No\.|NO\.|#)\s*(\d{1,4})/i);
+
+            return {
+                found: true,
+                maker: detectedMaker,
+                code: codeMatch ? codeMatch[1] : '',
+                seriesNo: seriesMatch ? `No.${seriesMatch[1]}` : '-',
+                name: cleanedName.slice(0, 75),
+                price: representativePrice || 0,
+                spec: scaleMatch ? scaleMatch[1] : ''
+            };
         }
 
-        // ==========================================
-        // ログイン・パスワード認証処理
-        // ==========================================
-        function getSystemPassword() {
-            return localStorage.getItem(STORAGE_KEY_PASSWORD) || DEFAULT_PASSWORD;
-        }
-
-        function handleLogin(event) {
-            event.preventDefault();
-            const inputEl = document.getElementById('login-password');
-            const errorEl = document.getElementById('login-error-msg');
-            const entered = inputEl.value;
-
-            if (entered === getSystemPassword()) {
-                errorEl.classList.add('hidden');
-                inputEl.value = '';
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-shell').classList.remove('hidden');
-                switchTab(currentTab || 'KIT');
-                refreshAllUI();
-                showToast('ログインしました', 'success');
-
-                const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
-                const autoLoad = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) !== 'false';
-                if (gasUrl && autoLoad) {
-                    loadFromGoogleSheets(true);
-                }
-            } else {
-                errorEl.classList.remove('hidden');
-                inputEl.classList.remove('animate-shake');
-                void inputEl.offsetWidth;
-                inputEl.classList.add('animate-shake');
-                inputEl.select();
-            }
-        }
-
-        function logout() {
-            document.getElementById('app-shell').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('login-error-msg').classList.add('hidden');
-            const pwInput = document.getElementById('login-password');
-            pwInput.value = '';
-            pwInput.focus();
-            showToast('画面をロックしました', 'info');
-        }
-
-        function togglePasswordVisibility(inputId, btn) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
-            } else {
-                input.type = 'password';
-                btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
-            }
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function openPasswordModal() {
-            document.getElementById('cp-current').value = '';
-            document.getElementById('cp-new').value = '';
-            document.getElementById('cp-confirm').value = '';
-            document.getElementById('password-modal').classList.remove('hidden');
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function closePasswordModal() {
-            document.getElementById('password-modal').classList.add('hidden');
-        }
-
-        function handleChangePassword(event) {
-            event.preventDefault();
-            const current = document.getElementById('cp-current').value;
-            const nextPw = document.getElementById('cp-new').value;
-            const confirmPw = document.getElementById('cp-confirm').value;
-
-            if (current !== getSystemPassword()) {
-                showToast('現在のパスワードが正しくありません', 'error');
-                return;
-            }
-            if (nextPw !== confirmPw) {
-                showToast('新しいパスワード（確認）が一致しません', 'error');
-                return;
-            }
-            localStorage.setItem(STORAGE_KEY_PASSWORD, nextPw);
-            closePasswordModal();
-            saveData();
-            showToast('パスワードを変更しました', 'success');
-        }
-
-        // ==========================================
-        // 共通ヘルパー関数
-        // ==========================================
-        function getCategoryMeta(category) {
-            switch (category) {
-                case 'KIT':
-                    return {
-                        label: 'プラモデル',
-                        unit: '個',
-                        badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-                        icon: 'bot'
-                    };
-                case 'PART':
-                    return {
-                        label: 'パーツ・工具',
-                        unit: '点',
-                        badgeClass: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-                        icon: 'wrench'
-                    };
-                case 'PAINT':
-                    return {
-                        label: '塗料・溶剤',
-                        unit: '本',
-                        badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-                        icon: 'droplets'
-                    };
-                default:
-                    return {
-                        label: 'その他',
-                        unit: '個',
-                        badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-                        icon: 'package'
-                    };
-            }
-        }
-
-        function getFormattedNow() {
-            const d = new Date();
-            const pad = n => String(n).padStart(2, '0');
-            return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        }
-
-        // ==========================================
-        // タブ切り替え & 全体UI更新
-        // ==========================================
-        function switchTab(tabName) {
-            currentTab = tabName;
-            if (tabName === 'KIT' || tabName === 'PART' || tabName === 'PAINT') {
-                currentCategoryTab = tabName;
-            }
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = 'tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap';
-            });
-            const activeBtn = document.getElementById('tab-' + tabName);
-            if (activeBtn) {
-                const colorMap = {
-                    KIT: 'text-indigo-700',
-                    PART: 'text-cyan-700',
-                    PAINT: 'text-amber-700',
-                    ORDER: 'text-rose-700',
-                    HISTORY: 'text-slate-900'
-                };
-                activeBtn.className = `tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white ${colorMap[tabName] || 'text-blue-700'} shadow-2xs transition whitespace-nowrap`;
-            }
-
-            const viewInv = document.getElementById('view-inventory');
-            const viewOrder = document.getElementById('view-order');
-            const viewHistory = document.getElementById('view-history');
-
-            viewInv.classList.add('hidden');
-            viewOrder.classList.add('hidden');
-            viewHistory.classList.add('hidden');
-
-            if (tabName === 'ORDER') {
-                viewOrder.classList.remove('hidden');
-            } else if (tabName === 'HISTORY') {
-                viewHistory.classList.remove('hidden');
-            } else {
-                viewInv.classList.remove('hidden');
-                updateCategoryBanner(tabName);
-            }
-
-            refreshAllUI();
-        }
-
-        function updateCategoryBanner(cat) {
-            const iconBox = document.getElementById('category-banner-icon');
-            const title = document.getElementById('category-banner-title');
-            const desc = document.getElementById('category-banner-desc');
-
-            if (cat === 'KIT') {
-                iconBox.className = 'p-2.5 rounded-xl bg-indigo-50 text-indigo-600';
-                iconBox.innerHTML = '<i data-lucide="bot" class="w-6 h-6"></i>';
-                title.textContent = 'プラモデル 在庫管理';
-                desc.textContent = '積みプラ・制作中キット・スケール別在庫を一元管理します。';
-            } else if (cat === 'PART') {
-                iconBox.className = 'p-2.5 rounded-xl bg-cyan-50 text-cyan-600';
-                iconBox.innerHTML = '<i data-lucide="wrench" class="w-6 h-6"></i>';
-                title.textContent = 'パーツ・デカール・工具 在庫管理';
-                desc.textContent = '水転写デカール・ディテールアップパーツ・消耗工具の在庫を管理します。';
-            } else if (cat === 'PAINT') {
-                iconBox.className = 'p-2.5 rounded-xl bg-amber-50 text-amber-600';
-                iconBox.innerHTML = '<i data-lucide="droplets" class="w-6 h-6"></i>';
-                title.textContent = '塗料・溶剤・サーフェイサー 在庫管理';
-                desc.textContent = 'ラッカー・水性・エナメル塗料やサーフェイサーの色見本・残数を管理します。';
-            }
-
-            const csvImportBtn = document.getElementById('btn-csv-import');
-            if (csvImportBtn) {
-                csvImportBtn.classList.toggle('hidden', currentTab !== 'KIT' && currentTab !== 'PART' && currentTab !== 'PAINT');
-            }
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function refreshAllUI() {
-            updateKPIs();
-            renderInventoryTable();
-            renderOrderList();
-            renderHistory();
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function updateKPIs() {
-            const kitSum = items.filter(i => i.category === 'KIT').reduce((sum, i) => sum + Number(i.stock || 0), 0);
-            const partSum = items.filter(i => i.category === 'PART').reduce((sum, i) => sum + Number(i.stock || 0), 0);
-            const paintSum = items.filter(i => i.category === 'PAINT').reduce((sum, i) => sum + Number(i.stock || 0), 0);
-            const lowCount = items.filter(i => Number(i.stock) < Number(i.minStock)).length;
-
-            document.getElementById('kpi-kits').innerHTML = `${kitSum} <span class="text-xs font-normal text-slate-400">個</span>`;
-            document.getElementById('kpi-parts').innerHTML = `${partSum} <span class="text-xs font-normal text-slate-400">点</span>`;
-            document.getElementById('kpi-paints').innerHTML = `${paintSum} <span class="text-xs font-normal text-slate-400">本</span>`;
-            document.getElementById('kpi-low').innerHTML = `${lowCount} <span class="text-xs font-normal text-slate-400">件</span>`;
-
-            const badge = document.getElementById('badge-low-count');
-            if (lowCount > 0) {
-                badge.textContent = lowCount;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        // ==========================================
-        // 在庫一覧描画（スマホ・PC共通 3行構成） & クイック入出庫
-        // ==========================================
-        function renderInventoryTable() {
-            const listEl = document.getElementById('inventory-list');
-            const emptyEl = document.getElementById('inventory-empty');
-            if (!listEl) return;
-
-            const search = (document.getElementById('filter-search')?.value || '').toLowerCase().trim();
-            const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
-            const sortType = document.getElementById('filter-sort')?.value || 'UPDATED_DESC';
-
-            let filtered = items.filter(item => item.category === currentCategoryTab);
-
-            if (search) {
-                filtered = filtered.filter(item =>
-                    (item.code || '').toLowerCase().includes(search) ||
-                    (item.jan || '').toLowerCase().includes(search) ||
-                    (item.seriesNo || '').toLowerCase().includes(search) ||
-                    (item.name || '').toLowerCase().includes(search) ||
-                    (item.maker || '').toLowerCase().includes(search) ||
-                    (item.spec || '').toLowerCase().includes(search) ||
-                    (item.memo || '').toLowerCase().includes(search)
-                );
-            }
-
-            if (statusFilter === 'LOW') {
-                filtered = filtered.filter(i => Number(i.stock) < Number(i.minStock));
-            } else if (statusFilter === 'ZERO') {
-                filtered = filtered.filter(i => Number(i.stock) === 0);
-            } else if (statusFilter === 'OK') {
-                filtered = filtered.filter(i => Number(i.stock) >= Number(i.minStock));
-            }
-
-            filtered.sort((a, b) => {
-                if (sortType === 'CODE_ASC') {
-                    return (a.code || '').localeCompare(b.code || '', 'ja');
-                } else if (sortType === 'STOCK_ASC') {
-                    return Number(a.stock) - Number(b.stock);
-                } else {
-                    return (b.updatedAt || '').localeCompare(a.updatedAt || '');
-                }
-            });
-
-            if (filtered.length === 0) {
-                listEl.innerHTML = '';
-                emptyEl.classList.remove('hidden');
-                return;
-            }
-
-            emptyEl.classList.add('hidden');
-            const meta = getCategoryMeta(currentCategoryTab);
-
-            listEl.innerHTML = filtered.map(item => {
-                const stock = Number(item.stock);
-                const minStock = Number(item.minStock);
-                let statusBadge = '';
-                if (stock === 0) {
-                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200 shrink-0">在庫切れ</span>`;
-                } else if (stock < minStock) {
-                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">要補充</span>`;
-                } else {
-                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0">適正</span>`;
-                }
-
-                const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-85 transition">`
-                    : `<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
-
-                const colorChip = (item.category === 'PAINT' && item.color)
-                    ? `<span class="inline-block w-3.5 h-3.5 rounded-full border border-slate-400 shrink-0 shadow-2xs" style="background-color: ${escapeHtml(item.color)}" title="カラー見本"></span>`
-                    : '';
-
-                const priceText = (item.price !== undefined && item.price !== null && item.price !== '' && Number(item.price) > 0)
-                    ? `¥${Number(item.price).toLocaleString()}`
-                    : '-';
-
-                return `
-                    <div class="p-3.5 sm:p-4 hover:bg-slate-50/90 transition space-y-2.5">
-                        <!-- 1行目: 状態バッジ + 品番/JAN + シリーズNo + メーカー名 + 編集/削除ボタン -->
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
-                                ${statusBadge}
-                                <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(item.code)}</span>
-                                ${item.jan ? `<span class="font-mono text-[11px] text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">JAN: ${escapeHtml(item.jan)}</span>` : ''}
-                                ${item.seriesNo && item.seriesNo !== '-' ? `<span class="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">シリーズ: ${escapeHtml(item.seriesNo)}</span>` : ''}
-                                <span class="text-xs font-semibold text-slate-500 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
-                            </div>
-                            <div class="inline-flex items-center space-x-1 shrink-0">
-                                <button type="button" onclick="openItemModal('${item.id}')" title="編集" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                                    <i data-lucide="edit-3" class="w-4 h-4 pointer-events-none"></i>
-                                </button>
-                                <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
-                                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 2行目: 商品画像 + 品名 + 規格・入手方法バッジ + 定価 -->
-                        <div class="flex items-start gap-3">
-                            ${imgHtml}
-                            <div class="flex-1 min-w-0 space-y-1.5">
-                                <div class="font-bold text-sm sm:text-base text-slate-900 flex items-start gap-1.5 leading-snug break-words">
-                                    ${colorChip ? `<span class="mt-1">${colorChip}</span>` : ''}
-                                    <span>${escapeHtml(item.name)}</span>
-                                </div>
-                                <div class="flex flex-wrap items-center justify-between gap-2">
-                                    <div class="flex flex-wrap items-center gap-1.5">
-                                        ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
-                                        ${item.acquisition ? `<span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">${escapeHtml(item.acquisition)}</span>` : ''}
-                                    </div>
-                                    <span class="font-mono text-xs sm:text-sm font-bold text-slate-700">定価: ${priceText}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3行目: 現在庫 / 必要在庫 + クイック入出庫(- / +) + 備考メモ・更新日 -->
-                        <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div class="flex items-center justify-between sm:justify-start gap-3">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs text-slate-500">現在庫:</span>
-                                    <span class="font-bold text-base sm:text-lg ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">${stock}<span class="text-xs font-normal text-slate-500 ml-0.5">${meta.unit}</span></span>
-                                    <span class="text-xs text-slate-400">/ 必要: ${minStock}${meta.unit}</span>
-                                </div>
-                                <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-2xs">
-                                    <button type="button" onclick="quickAdjust('${item.id}', -1)" title="1つ出庫 (-1)" class="px-3 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-bold transition">-</button>
-                                    <span class="w-px h-4 bg-slate-200"></span>
-                                    <button type="button" onclick="quickAdjust('${item.id}', 1)" title="1つ入庫 (+1)" class="px-3 py-1 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-bold transition">+</button>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between sm:justify-end gap-2 text-xs text-slate-500 min-w-0">
-                                ${item.memo ? `<span class="text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded truncate max-w-[230px] sm:max-w-xs" title="${escapeHtml(item.memo)}">${escapeHtml(item.memo)}</span>` : '<span></span>'}
-                                <span class="text-[11px] text-slate-400 shrink-0">更新: ${escapeHtml((item.updatedAt || '').split(' ')[0] || '-')}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function quickAdjust(itemId, delta) {
-            const idx = items.findIndex(i => i.id === itemId);
-            if (idx === -1) return;
-
-            const current = Number(items[idx].stock || 0);
-            const next = current + delta;
-            if (next < 0) {
-                showToast('在庫数は0未満にできません', 'error');
-                return;
-            }
-
-            items[idx].stock = next;
-            items[idx].updatedAt = getFormattedNow();
-
-            historyLogs.unshift({
-                id: 'tx-' + Date.now(),
-                timestamp: getFormattedNow(),
-                type: delta > 0 ? 'IN' : 'OUT',
-                itemId: items[idx].id,
-                itemCode: items[idx].code,
-                itemName: items[idx].name,
-                qty: delta,
-                afterStock: next,
-                note: delta > 0 ? 'クイック入庫 (+1)' : 'クイック出庫 (-1)'
-            });
-
-            saveData();
-            refreshAllUI();
-            showToast(`${items[idx].name} の在庫を ${next} に更新しました`, 'success');
-        }
-
-        // ==========================================
-        // 購入希望リスト描画（3行構成）
-        // ==========================================
-        function renderOrderList() {
-            const listEl = document.getElementById('order-list');
-            const emptyEl = document.getElementById('order-empty');
-            if (!listEl) return;
-
-            const lowItems = items.filter(i => Number(i.stock) < Number(i.minStock));
-            if (lowItems.length === 0) {
-                listEl.innerHTML = '';
-                emptyEl.classList.remove('hidden');
-                return;
-            }
-
-            emptyEl.classList.add('hidden');
-            listEl.innerHTML = lowItems.map(item => {
-                const meta = getCategoryMeta(item.category);
-                const stock = Number(item.stock);
-                const minStock = Number(item.minStock);
-                const recommended = Math.max(1, minStock - stock);
-
-                const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in">`
-                    : `<div class="w-14 h-14 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
-
-                return `
-                    <div class="p-3.5 sm:p-4 hover:bg-rose-50/40 transition space-y-2.5">
-                        <!-- 1行目: カテゴリ + 品番/JAN + メーカー + 削除 -->
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex flex-wrap items-center gap-1.5 min-w-0">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${meta.badgeClass}">${meta.label}</span>
-                                <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(item.code)}</span>
-                                ${item.jan ? `<span class="font-mono text-[11px] text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">JAN: ${escapeHtml(item.jan)}</span>` : ''}
-                                <span class="text-xs font-semibold text-slate-500 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
-                            </div>
-                            <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0">
-                                <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
-                            </button>
-                        </div>
-
-                        <!-- 2行目: 画像 + 品名 + 規格 -->
-                        <div class="flex items-start gap-3">
-                            ${imgHtml}
-                            <div class="flex-1 min-w-0 space-y-1">
-                                <div class="font-bold text-sm sm:text-base text-slate-900 leading-snug break-words">${escapeHtml(item.name)}</div>
-                                <div class="flex flex-wrap items-center gap-1.5">
-                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">${escapeHtml(item.spec)}</span>` : ''}
-                                    ${item.memo ? `<span class="text-xs text-slate-600 bg-white px-2 py-0.5 rounded border border-rose-100">${escapeHtml(item.memo)}</span>` : ''}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3行目: 在庫状況 + 推奨購入数 + 購入反映ボタン -->
-                        <div class="pt-2 border-t border-rose-100/70 flex items-center justify-between gap-2">
-                            <div class="flex flex-wrap items-baseline gap-3 text-xs">
-                                <span>現在庫: <strong class="text-sm text-rose-600">${stock}${meta.unit}</strong></span>
-                                <span class="text-slate-500">必要: ${minStock}${meta.unit}</span>
-                                <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">推奨購入: +${recommended}${meta.unit}</span>
-                            </div>
-                            <button type="button" onclick="openStockModal('ADJUST', '${item.id}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-2xs shrink-0">
-                                購入反映
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ==========================================
-        // 入出庫・棚卸履歴描画（3行構成）
-        // ==========================================
-        function renderHistory() {
-            const listEl = document.getElementById('history-list');
-            const emptyEl = document.getElementById('history-empty');
-            if (!listEl) return;
-
-            const typeFilter = document.getElementById('history-filter-type')?.value || 'ALL';
-            let filtered = [...historyLogs];
-            if (typeFilter !== 'ALL') {
-                filtered = filtered.filter(l => l.type === typeFilter);
-            }
-
-            if (filtered.length === 0) {
-                listEl.innerHTML = '';
-                emptyEl.classList.remove('hidden');
-                return;
-            }
-
-            emptyEl.classList.add('hidden');
-            listEl.innerHTML = filtered.map(log => {
-                let badge = '';
-                if (log.type === 'IN') {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">入庫・登録</span>`;
-                } else if (log.type === 'OUT') {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">出庫・消費</span>`;
-                } else {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700">実在庫調整</span>`;
-                }
-
-                const qtyNum = Number(log.qty || 0);
-                const qtyText = qtyNum > 0 ? `+${qtyNum}` : `${qtyNum}`;
-                const qtyClass = qtyNum > 0 ? 'text-emerald-600' : (qtyNum < 0 ? 'text-amber-700' : 'text-slate-600');
-
-                return `
-                    <div class="p-3.5 sm:p-4 hover:bg-slate-50 transition space-y-1.5">
-                        <!-- 1行目: 区分バッジ + 品番 + 日時 -->
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
-                                ${badge}
-                                <span class="font-mono text-xs font-bold text-slate-700">${escapeHtml(log.itemCode)}</span>
-                            </div>
-                            <span class="text-xs font-mono text-slate-400">${escapeHtml(log.timestamp)}</span>
-                        </div>
-                        <!-- 2行目: 品名 -->
-                        <div class="font-bold text-sm text-slate-900 leading-snug break-words">${escapeHtml(log.itemName)}</div>
-                        <!-- 3行目: 変動数・処理後在庫 + 備考 -->
-                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-slate-100">
-                            <div class="flex items-center gap-3">
-                                <span>変動: <strong class="text-sm ${qtyClass}">${qtyText}</strong></span>
-                                <span class="text-slate-600">処理後在庫: <strong>${log.afterStock}</strong></span>
-                            </div>
-                            <span class="text-slate-500 break-words">${escapeHtml(log.note || '-')}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ==========================================
-        // 2段階自動登録:
-        // 第1段階: JANコードからメーカー・型番・品名・価格を自動登録
-        // 第2段階: JANで取得できない場合、メーカーと品番から品名・価格をWeb探索
-        // ==========================================
         function applyLookupDataToForm(data, options = {}) {
             if (!data || !data.name) return false;
             const { overwriteCode = true, overwriteMaker = true } = options;
@@ -1876,7 +1326,7 @@ function doGet(e) {
                 contents: [{ parts: [{ text: promptText }] }],
                 tools: [{ "google_search": {} }],
                 systemInstruction: {
-                    parts: [{ text: "あなたは日本のプラモデル・模型パーツ・模型塗料の製品カタログ検索システムです。Web検索結果に基づき、正確なメーカー名・型番（品番）・シリーズNo.・正式な商品名・メーカー希望小売価格（税込定価の数値のみ）・規格を特定し、純粋なJSONオブジェクトのみを返してください。" }]
+                    parts: [{ text: "あなたは日本のプラモデル・模型パーツ・模型塗料の専門カタログデータベースです。必ずGoogle検索を実行し、実在する商品の正式メーカー名・型番（品番）・シリーズNo.・正式商品名・メーカー希望小売価格（税込定価の数値のみ）・規格を特定して純粋なJSONオブジェクトのみを返してください。推測や架空の商品名は絶対に返さず、特定できない場合は found: false を返してください。" }]
                 }
             };
 
@@ -1901,73 +1351,167 @@ function doGet(e) {
         }
 
         async function searchByJanCode(janCode, categoryLabel) {
-            if (!janCode) return null;
+            const cleanJan = String(janCode || '').replace(/\D/g, '');
+            if (!cleanJan) return null;
+
+            const prefixMaker = detectMakerFromJanPrefix(cleanJan);
 
             // 1-A. 登録済み在庫マスタからJAN一致検索
-            const existingByJan = items.find(i => (i.jan || '').trim() === janCode || (i.code || '').trim() === janCode);
+            const existingByJan = items.find(i => (i.jan || '').replace(/\D/g, '') === cleanJan || (i.code || '').replace(/\D/g, '') === cleanJan);
             if (existingByJan) {
                 return {
                     found: true,
                     name: existingByJan.name,
                     code: existingByJan.code,
-                    jan: janCode,
+                    jan: cleanJan,
                     seriesNo: existingByJan.seriesNo || '-',
-                    maker: existingByJan.maker || '',
+                    maker: existingByJan.maker || prefixMaker,
                     price: existingByJan.price || 0,
                     spec: existingByJan.spec || ''
                 };
             }
 
-            // 1-B. Gemini + Google Search でJANコードからメーカー・型番・品名・価格を検索
-            try {
-                const janPrompt = `日本のJANコード「${janCode}」（カテゴリ候補: ${categoryLabel}）の商品をWeb検索で特定し、以下のJSON形式のみで回答してください:
-{"found": trueまたはfalse, "maker": "メーカー名", "code": "メーカー品番・型番", "seriesNo": "シリーズ番号(なければ'-')", "name": "正式な商品名", "price": 税込定価の数値(円・不明時は0), "spec": "スケールや規格(例: 1/144, 1/100, ラッカー系 10ml 等)"}`;
-                const aiRes = await queryGeminiWebSearch(janPrompt);
-                if (aiRes && aiRes.found && aiRes.name) {
-                    return { ...aiRes, jan: janCode };
-                }
-            } catch (e) {
-                // フォールバックへ
+            // 1-B. ローカルカタログ辞書からJAN一致検索
+            const catalogByJan = KNOWN_PRODUCT_CATALOG.find(p => (p.jan || '') === cleanJan);
+            if (catalogByJan) {
+                return {
+                    found: true,
+                    name: catalogByJan.name,
+                    code: catalogByJan.code,
+                    jan: cleanJan,
+                    seriesNo: '-',
+                    maker: catalogByJan.maker || prefixMaker,
+                    price: catalogByJan.price || 0,
+                    spec: catalogByJan.spec || ''
+                };
             }
 
-            // 1-C. 公開ショッピングAPI（Rakuten Ichiba Open Search / JSONP不要CORS対応エンドポイント）によるJAN補完
+            // 1-C. Gemini + Google Search でJANコード（＋GS1推定メーカー）から検索
             try {
-                const rakutenUrl = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?applicationId=1063322343836103248&keyword=${encodeURIComponent(janCode)}&hits=3`;
+                const janPrompt = `日本のJANコード「${cleanJan}」（GS1事業者推定メーカー: ${prefixMaker || '不明'} / カテゴリ候補: ${categoryLabel}）の商品をWeb検索で特定し、以下のJSON形式のみで回答してください:
+{"found": trueまたはfalse, "maker": "正式メーカー名", "code": "メーカー品番・型番", "seriesNo": "シリーズ番号(なければ'-')", "name": "正式な商品名", "price": 税込定価の数値(円・不明時は0), "spec": "スケールや規格(例: 1/144, 1/100, ラッカー系 10ml 等)"}`;
+                const aiRes = await queryGeminiWebSearch(janPrompt);
+                if (aiRes && aiRes.found && aiRes.name) {
+                    return {
+                        ...aiRes,
+                        maker: aiRes.maker || prefixMaker,
+                        jan: cleanJan
+                    };
+                }
+            } catch (e) {
+                // 公開APIフォールバックへ
+            }
+
+            // 1-D. 公開ショッピングAPI（Rakuten Ichiba Search）でJAN検索＆候補スコアリング選定
+            try {
+                const rakutenUrl = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?applicationId=1063322343836103248&keyword=${encodeURIComponent(cleanJan)}&hits=6`;
                 const rRes = await fetch(rakutenUrl);
                 if (rRes.ok) {
                     const rJson = await rRes.json();
-                    const firstItem = rJson?.Items?.[0]?.Item;
-                    if (firstItem && firstItem.itemName) {
-                        const rawName = firstItem.itemName
-                            .replace(/【[^】]*】/g, '')
-                            .replace(/\[[^\]]*\]/g, '')
-                            .replace(/\(新品\)|（新品）|送料無料/g, '')
-                            .trim();
-                        let detectedMaker = '';
-                        if (/バンダイ|BANDAI/i.test(rawName)) detectedMaker = 'BANDAI SPIRITS (バンダイ)';
-                        else if (/タミヤ|TAMIYA/i.test(rawName)) detectedMaker = 'タミヤ (TAMIYA)';
-                        else if (/ハセガワ|HASEGAWA/i.test(rawName)) detectedMaker = 'ハセガワ (Hasegawa)';
-                        else if (/コトブキヤ|KOTOBUKIYA/i.test(rawName)) detectedMaker = 'コトブキヤ (KOTOBUKIYA)';
-                        else if (/クレオス|Mr\.カラー|Mr\.HOBBY/i.test(rawName)) detectedMaker = 'GSIクレオス (Mr.HOBBY)';
-                        else if (/ガイアノーツ/i.test(rawName)) detectedMaker = 'ガイアノーツ (Gaianotes)';
-
-                        const codeMatch = rawName.match(/\b([A-Z]{1,4}-?\d{1,4}|\d{7})\b/);
-                        const scaleMatch = rawName.match(/\b(1\/(?:144|100|72|48|35|24|12))\b/);
-
+                    const candidate = parseBestCommerceCandidate(rJson?.Items, prefixMaker, '');
+                    if (candidate && candidate.found) {
                         return {
-                            found: true,
-                            maker: detectedMaker,
-                            code: codeMatch ? codeMatch[1] : '',
-                            jan: janCode,
-                            seriesNo: '-',
-                            name: rawName.slice(0, 70),
-                            price: Number(firstItem.itemPrice) || 0,
-                            spec: scaleMatch ? scaleMatch[1] : ''
+                            ...candidate,
+                            maker: candidate.maker || prefixMaker,
+                            jan: cleanJan
                         };
                     }
                 }
             } catch (e) {
                 // 第2段階へフォールバック
+            }
+
+            // JAN単体で商品名までは取れなかったがメーカープレフィックスだけ判明した場合はメーカーをセットしておく
+            if (prefixMaker && !document.getElementById('item-maker').value) {
+                populateSelectOptions(prefixMaker, document.getElementById('item-spec').value || '');
+            }
+
+            return null;
+        }
+
+        async function searchByMakerAndCode(makerVal, codeRaw, categoryLabel) {
+            if (!codeRaw && !makerVal) return null;
+            const codeUpper = codeRaw.toUpperCase();
+            const codeNorm = normalizeCodeStr(codeRaw);
+
+            // 2-A. 既存在庫マスタから正規化品番一致検索
+            const existing = items.find(i => codeNorm && normalizeCodeStr(i.code) === codeNorm);
+            if (existing) {
+                return {
+                    found: true,
+                    name: existing.name,
+                    code: existing.code,
+                    jan: existing.jan || '',
+                    seriesNo: existing.seriesNo || '-',
+                    maker: existing.maker || makerVal,
+                    price: existing.price || 0,
+                    spec: existing.spec || ''
+                };
+            }
+
+            // 2-B. ローカルカタログ辞書から正規化品番検索（C1 と C-1 等の表記ゆれ対応）
+            const foundLocal = KNOWN_PRODUCT_CATALOG.find(p =>
+                normalizeCodeStr(p.code) === codeNorm &&
+                (!makerVal || makerVal.includes(p.maker) || p.maker.includes(makerVal.split(' ')[0]))
+            ) || KNOWN_PRODUCT_CATALOG.find(p => normalizeCodeStr(p.code) === codeNorm);
+
+            if (foundLocal) {
+                return {
+                    found: true,
+                    name: foundLocal.name,
+                    code: foundLocal.code,
+                    jan: foundLocal.jan || '',
+                    seriesNo: '-',
+                    maker: foundLocal.maker,
+                    price: foundLocal.price,
+                    spec: foundLocal.spec
+                };
+            }
+
+            // 2-C. Gemini + Google Search でメーカーと品番から品名と価格をWeb探索
+            try {
+                const makerCodePrompt = `日本の模型・プラモデル・ホビー製品データベースとして、以下のメーカーと品番から実在する製品情報をWeb検索して特定してください。
+メーカー: ${makerVal || '指定なし'}
+品番・型番: ${codeRaw || '指定なし'}
+カテゴリ候補: ${categoryLabel}
+
+以下のJSON形式のみで回答してください:
+{"found": trueまたはfalse, "name": "正式な商品名", "code": "型番・品番", "seriesNo": "シリーズ番号(なければ'-')", "maker": "メーカー名", "price": 税込定価の数値(円・不明時は0), "spec": "スケールや規格(例: 1/144, 1/100, ラッカー系 10ml 等)"}`;
+
+                const aiRes = await queryGeminiWebSearch(makerCodePrompt);
+                if (aiRes && aiRes.found && aiRes.name) {
+                    return aiRes;
+                }
+            } catch (e) {
+                // 公開APIフォールバックへ
+            }
+
+            // 2-D. Rakuten公開検索APIによる複数クエリフォールバック（①メーカー+品番+カテゴリキーワード → ②メーカー+品番）
+            const shortMaker = (makerVal || '').split(' ')[0].replace(/\(.*\)/, '').trim();
+            const catHint = categoryLabel === '塗料・溶剤' ? '塗料' : (categoryLabel === 'パーツ・工具' ? '模型' : 'プラモデル');
+            const queries = [
+                `${shortMaker} ${codeRaw} ${catHint}`.trim(),
+                `${shortMaker} ${codeRaw}`.trim()
+            ].filter((q, idx, arr) => q && arr.indexOf(q) === idx);
+
+            for (const kw of queries) {
+                try {
+                    const rakutenUrl = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?applicationId=1063322343836103248&keyword=${encodeURIComponent(kw)}&hits=6`;
+                    const rRes = await fetch(rakutenUrl);
+                    if (rRes.ok) {
+                        const rJson = await rRes.json();
+                        const candidate = parseBestCommerceCandidate(rJson?.Items, makerVal, codeNorm);
+                        if (candidate && candidate.found) {
+                            return {
+                                ...candidate,
+                                code: codeRaw || candidate.code,
+                                maker: makerVal || candidate.maker
+                            };
+                        }
+                    }
+                } catch (e) {
+                    // 次のクエリへ
+                }
             }
 
             return null;
@@ -2329,6 +1873,619 @@ function doGet(e) {
             } catch (e) {
                 showToast('コピーに失敗しました。手動で選択してコピーしてください', 'error');
             }
+        }
+
+        function copyDeviceSyncLink() {
+            const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL) || '';
+            const editUrl = localStorage.getItem(STORAGE_KEY_SHEETS_EDIT_URL) || '';
+            const pw = getSystemPassword();
+
+            if (!gasUrl) {
+                showToast('先に「Google Apps Script ウェブアプリURL」を設定・保存してください', 'info');
+                return;
+            }
+
+            const baseUrl = window.location.href.split('?')[0].split('#')[0];
+            const params = new URLSearchParams();
+            params.set('sync_gas', gasUrl);
+            if (editUrl) params.set('sync_edit', editUrl);
+            params.set('sync_pw', btoa(encodeURIComponent(pw)));
+
+            const shareUrl = `${baseUrl}?${params.toString()}`;
+            const tempInput = document.createElement('input');
+            tempInput.value = shareUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                showToast('別端末引き継ぎ用URLをコピーしました。別端末のブラウザで開いてください', 'success');
+            } catch (e) {
+                showToast('URLのコピーに失敗しました', 'error');
+            } finally {
+                document.body.removeChild(tempInput);
+            }
+        }
+
+        // ==========================================
+        // アプリケーション状態変数 & 初期化・認証・保存・一覧描画
+        // ==========================================
+        let items = [];
+        let historyLogs = [];
+        let makersList = [];
+        let specsList = [];
+        let outReasonsList = [];
+        let currentTab = 'KIT';
+        let currentCategoryTab = 'KIT';
+        let currentEditingImage = '';
+        let confirmCallback = null;
+        let html5QrScannerInstance = null;
+        let currentScannerTarget = 'ITEM_CODE';
+
+        function applyDeviceSyncParamsFromUrl() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const syncGas = params.get('sync_gas');
+                const syncEdit = params.get('sync_edit');
+                const syncPw = params.get('sync_pw');
+
+                if (syncGas) {
+                    localStorage.setItem(STORAGE_KEY_SHEETS_URL, syncGas);
+                    localStorage.setItem(STORAGE_KEY_SHEETS_AUTO, 'true');
+                    localStorage.setItem(STORAGE_KEY_SHEETS_AUTO_LOAD, 'true');
+                    if (syncEdit) localStorage.setItem(STORAGE_KEY_SHEETS_EDIT_URL, syncEdit);
+                    if (syncPw) {
+                        try {
+                            const decodedPw = decodeURIComponent(atob(syncPw));
+                            if (decodedPw) localStorage.setItem(STORAGE_KEY_PASSWORD, decodedPw);
+                        } catch (e) {}
+                    }
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const hasUrlSync = applyDeviceSyncParamsFromUrl();
+            loadDataFromStorage();
+            updateSheetsStatusUI();
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+
+            if (hasUrlSync) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-shell').classList.remove('hidden');
+                switchTab('KIT');
+                refreshAllUI();
+                showToast('別端末の設定・パスワードを引き継ぎました。最新データを同期中...', 'success');
+                loadFromGoogleSheets(false);
+                return;
+            }
+
+            const pwInput = document.getElementById('login-password');
+            if (pwInput) pwInput.focus();
+        });
+
+        function loadDataFromStorage() {
+            try {
+                const rawItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+                const rawLogs = localStorage.getItem(STORAGE_KEY_LOGS);
+                const rawMakers = localStorage.getItem(STORAGE_KEY_MAKERS);
+                const rawSpecs = localStorage.getItem(STORAGE_KEY_SPECS);
+                const rawOutReasons = localStorage.getItem(STORAGE_KEY_OUT_REASONS);
+
+                items = rawItems ? JSON.parse(rawItems) : JSON.parse(JSON.stringify(INITIAL_ITEMS));
+                historyLogs = rawLogs ? JSON.parse(rawLogs) : JSON.parse(JSON.stringify(INITIAL_LOGS));
+                makersList = rawMakers ? JSON.parse(rawMakers) : [...DEFAULT_MAKERS];
+                specsList = rawSpecs ? JSON.parse(rawSpecs) : [...DEFAULT_SPECS];
+                outReasonsList = rawOutReasons ? JSON.parse(rawOutReasons) : [...DEFAULT_OUT_REASONS];
+            } catch (e) {
+                items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+                historyLogs = JSON.parse(JSON.stringify(INITIAL_LOGS));
+                makersList = [...DEFAULT_MAKERS];
+                specsList = [...DEFAULT_SPECS];
+                outReasonsList = [...DEFAULT_OUT_REASONS];
+            }
+        }
+
+        function saveData(skipCloudSync = false) {
+            try {
+                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+                localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(historyLogs));
+                localStorage.setItem(STORAGE_KEY_MAKERS, JSON.stringify(makersList));
+                localStorage.setItem(STORAGE_KEY_SPECS, JSON.stringify(specsList));
+                localStorage.setItem(STORAGE_KEY_OUT_REASONS, JSON.stringify(outReasonsList));
+            } catch (e) {
+                showToast('ブラウザ保存容量の上限に達しました。不要な画像を削除してください', 'error');
+            }
+
+            if (!skipCloudSync) {
+                const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
+                const autoSync = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false';
+                if (gasUrl && autoSync) {
+                    syncToGoogleSheets(false);
+                }
+            }
+        }
+
+        function getSystemPassword() {
+            return localStorage.getItem(STORAGE_KEY_PASSWORD) || DEFAULT_PASSWORD;
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const inputEl = document.getElementById('login-password');
+            const errorEl = document.getElementById('login-error-msg');
+            const entered = inputEl.value;
+
+            if (entered === getSystemPassword()) {
+                errorEl.classList.add('hidden');
+                inputEl.value = '';
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-shell').classList.remove('hidden');
+                switchTab(currentTab || 'KIT');
+                refreshAllUI();
+                showToast('ログインしました', 'success');
+
+                const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
+                const autoLoad = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) !== 'false';
+                if (gasUrl && autoLoad) {
+                    loadFromGoogleSheets(true);
+                }
+            } else {
+                errorEl.classList.remove('hidden');
+                inputEl.classList.remove('animate-shake');
+                void inputEl.offsetWidth;
+                inputEl.classList.add('animate-shake');
+                inputEl.select();
+            }
+        }
+
+        function logout() {
+            document.getElementById('app-shell').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('login-error-msg').classList.add('hidden');
+            const pwInput = document.getElementById('login-password');
+            pwInput.value = '';
+            pwInput.focus();
+            showToast('画面をロックしました', 'info');
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openPasswordModal() {
+            document.getElementById('cp-current').value = '';
+            document.getElementById('cp-new').value = '';
+            document.getElementById('cp-confirm').value = '';
+            document.getElementById('password-modal').classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+        }
+
+        function handleChangePassword(event) {
+            event.preventDefault();
+            const current = document.getElementById('cp-current').value;
+            const nextPw = document.getElementById('cp-new').value;
+            const confirmPw = document.getElementById('cp-confirm').value;
+
+            if (current !== getSystemPassword()) {
+                showToast('現在のパスワードが正しくありません', 'error');
+                return;
+            }
+            if (nextPw !== confirmPw) {
+                showToast('新しいパスワード（確認）が一致しません', 'error');
+                return;
+            }
+            localStorage.setItem(STORAGE_KEY_PASSWORD, nextPw);
+            closePasswordModal();
+            saveData();
+            showToast('パスワードを変更しました（スプレッドシート連携時は他端末にも同期されます）', 'success');
+        }
+
+        function getCategoryMeta(category) {
+            switch (category) {
+                case 'KIT':
+                    return { label: 'プラモデル', unit: '個', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: 'bot' };
+                case 'PART':
+                    return { label: 'パーツ・工具', unit: '点', badgeClass: 'bg-cyan-100 text-cyan-800 border-cyan-200', icon: 'wrench' };
+                case 'PAINT':
+                    return { label: '塗料・溶剤', unit: '本', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: 'droplets' };
+                default:
+                    return { label: 'その他', unit: '個', badgeClass: 'bg-slate-100 text-slate-800 border-slate-200', icon: 'package' };
+            }
+        }
+
+        function getFormattedNow() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            if (tabName === 'KIT' || tabName === 'PART' || tabName === 'PAINT') {
+                currentCategoryTab = tabName;
+            }
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap';
+            });
+            const activeBtn = document.getElementById('tab-' + tabName);
+            if (activeBtn) {
+                const colorMap = {
+                    KIT: 'text-indigo-700',
+                    PART: 'text-cyan-700',
+                    PAINT: 'text-amber-700',
+                    ORDER: 'text-rose-700',
+                    HISTORY: 'text-slate-900'
+                };
+                activeBtn.className = `tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white ${colorMap[tabName] || 'text-blue-700'} shadow-2xs transition whitespace-nowrap`;
+            }
+
+            const viewInv = document.getElementById('view-inventory');
+            const viewOrder = document.getElementById('view-order');
+            const viewHistory = document.getElementById('view-history');
+
+            viewInv.classList.add('hidden');
+            viewOrder.classList.add('hidden');
+            viewHistory.classList.add('hidden');
+
+            if (tabName === 'ORDER') {
+                viewOrder.classList.remove('hidden');
+            } else if (tabName === 'HISTORY') {
+                viewHistory.classList.remove('hidden');
+            } else {
+                viewInv.classList.remove('hidden');
+                updateCategoryBanner(tabName);
+            }
+
+            refreshAllUI();
+        }
+
+        function updateCategoryBanner(cat) {
+            const iconBox = document.getElementById('category-banner-icon');
+            const title = document.getElementById('category-banner-title');
+            const desc = document.getElementById('category-banner-desc');
+
+            if (cat === 'KIT') {
+                iconBox.className = 'p-2.5 rounded-xl bg-indigo-50 text-indigo-600';
+                iconBox.innerHTML = '<i data-lucide="bot" class="w-6 h-6"></i>';
+                title.textContent = 'プラモデル 在庫管理';
+                desc.textContent = '積みプラ・制作中キット・スケール別在庫を一元管理します。';
+            } else if (cat === 'PART') {
+                iconBox.className = 'p-2.5 rounded-xl bg-cyan-50 text-cyan-600';
+                iconBox.innerHTML = '<i data-lucide="wrench" class="w-6 h-6"></i>';
+                title.textContent = 'パーツ・デカール・工具 在庫管理';
+                desc.textContent = '水転写デカール・ディテールアップパーツ・消耗工具の在庫を管理します。';
+            } else if (cat === 'PAINT') {
+                iconBox.className = 'p-2.5 rounded-xl bg-amber-50 text-amber-600';
+                iconBox.innerHTML = '<i data-lucide="droplets" class="w-6 h-6"></i>';
+                title.textContent = '塗料・溶剤・サーフェイサー 在庫管理';
+                desc.textContent = 'ラッカー・水性・エナメル塗料やサーフェイサーの色見本・残数を管理します。';
+            }
+
+            const csvImportBtn = document.getElementById('btn-csv-import');
+            if (csvImportBtn) {
+                csvImportBtn.classList.toggle('hidden', currentTab !== 'KIT' && currentTab !== 'PART' && currentTab !== 'PAINT');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function refreshAllUI() {
+            updateKPIs();
+            renderInventoryTable();
+            renderOrderList();
+            renderHistory();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function updateKPIs() {
+            const kitSum = items.filter(i => i.category === 'KIT').reduce((sum, i) => sum + Number(i.stock || 0), 0);
+            const partSum = items.filter(i => i.category === 'PART').reduce((sum, i) => sum + Number(i.stock || 0), 0);
+            const paintSum = items.filter(i => i.category === 'PAINT').reduce((sum, i) => sum + Number(i.stock || 0), 0);
+            const lowCount = items.filter(i => Number(i.stock) < Number(i.minStock)).length;
+
+            document.getElementById('kpi-kits').innerHTML = `${kitSum} <span class="text-xs font-normal text-slate-400">個</span>`;
+            document.getElementById('kpi-parts').innerHTML = `${partSum} <span class="text-xs font-normal text-slate-400">点</span>`;
+            document.getElementById('kpi-paints').innerHTML = `${paintSum} <span class="text-xs font-normal text-slate-400">本</span>`;
+            document.getElementById('kpi-low').innerHTML = `${lowCount} <span class="text-xs font-normal text-slate-400">件</span>`;
+
+            const badge = document.getElementById('badge-low-count');
+            if (lowCount > 0) {
+                badge.textContent = lowCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function renderInventoryTable() {
+            const listEl = document.getElementById('inventory-list');
+            const emptyEl = document.getElementById('inventory-empty');
+            if (!listEl) return;
+
+            const search = (document.getElementById('filter-search')?.value || '').toLowerCase().trim();
+            const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
+            const sortType = document.getElementById('filter-sort')?.value || 'UPDATED_DESC';
+
+            let filtered = items.filter(item => item.category === currentCategoryTab);
+
+            if (search) {
+                filtered = filtered.filter(item =>
+                    (item.code || '').toLowerCase().includes(search) ||
+                    (item.jan || '').toLowerCase().includes(search) ||
+                    (item.seriesNo || '').toLowerCase().includes(search) ||
+                    (item.name || '').toLowerCase().includes(search) ||
+                    (item.maker || '').toLowerCase().includes(search) ||
+                    (item.spec || '').toLowerCase().includes(search) ||
+                    (item.memo || '').toLowerCase().includes(search)
+                );
+            }
+
+            if (statusFilter === 'LOW') {
+                filtered = filtered.filter(i => Number(i.stock) < Number(i.minStock));
+            } else if (statusFilter === 'ZERO') {
+                filtered = filtered.filter(i => Number(i.stock) === 0);
+            } else if (statusFilter === 'OK') {
+                filtered = filtered.filter(i => Number(i.stock) >= Number(i.minStock));
+            }
+
+            filtered.sort((a, b) => {
+                if (sortType === 'CODE_ASC') {
+                    return (a.code || '').localeCompare(b.code || '', 'ja');
+                } else if (sortType === 'STOCK_ASC') {
+                    return Number(a.stock) - Number(b.stock);
+                } else {
+                    return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+                }
+            });
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+            const meta = getCategoryMeta(currentCategoryTab);
+
+            listEl.innerHTML = filtered.map(item => {
+                const stock = Number(item.stock);
+                const minStock = Number(item.minStock);
+                let statusBadge = '';
+                if (stock === 0) {
+                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200 shrink-0">在庫切れ</span>`;
+                } else if (stock < minStock) {
+                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">要補充</span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0">適正</span>`;
+                }
+
+                const imgHtml = item.image
+                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" referrerpolicy="no-referrer" onclick="openImageLightbox('${item.id}')" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-85 transition shadow-2xs">`
+                    : `<div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[11px] font-bold text-slate-400">NoImage</span></div>`;
+
+                const colorChip = (item.category === 'PAINT' && item.color)
+                    ? `<span class="inline-block w-3.5 h-3.5 rounded-full border border-slate-400 shrink-0 shadow-2xs" style="background-color: ${escapeHtml(item.color)}" title="カラー見本"></span>`
+                    : '';
+
+                const priceText = (item.price !== undefined && item.price !== null && item.price !== '' && Number(item.price) > 0)
+                    ? `¥${Number(item.price).toLocaleString()}`
+                    : '-';
+
+                return `
+                    <div class="p-3.5 sm:p-4 hover:bg-slate-50/80 transition flex items-start gap-3 sm:gap-4">
+                        ${imgHtml}
+                        <div class="flex-1 min-w-0 space-y-1.5">
+                            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                                ${statusBadge}
+                                <span class="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(item.code)}</span>
+                                ${item.jan ? `<span class="font-mono text-[11px] text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">JAN: ${escapeHtml(item.jan)}</span>` : ''}
+                                ${item.seriesNo && item.seriesNo !== '-' ? `<span class="text-[11px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 font-medium">シリーズ: ${escapeHtml(item.seriesNo)}</span>` : ''}
+                                <span class="font-semibold text-slate-600 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
+                                <span class="text-[11px] text-slate-400 ml-auto">更新: ${escapeHtml((item.updatedAt || '').split(' ')[0] || '-')}</span>
+                            </div>
+
+                            <div class="font-bold text-sm sm:text-base text-slate-900 flex items-start gap-1.5 leading-snug break-words">
+                                ${colorChip ? `<span class="mt-1">${colorChip}</span>` : ''}
+                                <span>${escapeHtml(item.name)}</span>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
+                                    ${item.acquisition ? `<span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">${escapeHtml(item.acquisition)}</span>` : ''}
+                                    <span class="font-mono text-xs font-semibold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">${priceText}</span>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2 ml-auto">
+                                    <div class="text-xs sm:text-sm">
+                                        <span class="text-slate-500">在庫:</span>
+                                        <span class="font-bold text-base ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">${stock}</span>
+                                        <span class="text-xs text-slate-500">${meta.unit}</span>
+                                        <span class="text-[11px] text-slate-400 ml-1">(必要:${minStock})</span>
+                                    </div>
+                                    <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-2xs">
+                                        <button type="button" onclick="quickAdjust('${item.id}', -1)" title="1つ出庫 (-1)" class="px-2.5 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-bold transition">-</button>
+                                        <span class="w-px h-4 bg-slate-200"></span>
+                                        <button type="button" onclick="quickAdjust('${item.id}', 1)" title="1つ入庫 (+1)" class="px-2.5 py-1 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-bold transition">+</button>
+                                    </div>
+                                    <div class="inline-flex items-center space-x-0.5">
+                                        <button type="button" onclick="openItemModal('${item.id}')" title="編集" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                            <i data-lucide="edit-3" class="w-4 h-4 pointer-events-none"></i>
+                                        </button>
+                                        <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                                            <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${item.memo ? `<p class="text-xs text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(item.memo)}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function quickAdjust(itemId, delta) {
+            const idx = items.findIndex(i => i.id === itemId);
+            if (idx === -1) return;
+
+            const current = Number(items[idx].stock || 0);
+            const next = current + delta;
+            if (next < 0) {
+                showToast('在庫数は0未満にできません', 'error');
+                return;
+            }
+
+            items[idx].stock = next;
+            items[idx].updatedAt = getFormattedNow();
+
+            historyLogs.unshift({
+                id: 'tx-' + Date.now(),
+                timestamp: getFormattedNow(),
+                type: delta > 0 ? 'IN' : 'OUT',
+                itemId: items[idx].id,
+                itemCode: items[idx].code,
+                itemName: items[idx].name,
+                qty: delta,
+                afterStock: next,
+                note: delta > 0 ? 'クイック入庫 (+1)' : 'クイック出庫 (-1)'
+            });
+
+            saveData();
+            refreshAllUI();
+            showToast(`${items[idx].name} の在庫を ${next} に更新しました`, 'success');
+        }
+
+        function renderOrderList() {
+            const listEl = document.getElementById('order-list');
+            const emptyEl = document.getElementById('order-empty');
+            if (!listEl) return;
+
+            const lowItems = items.filter(i => Number(i.stock) < Number(i.minStock));
+            if (lowItems.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+            listEl.innerHTML = lowItems.map(item => {
+                const meta = getCategoryMeta(item.category);
+                const stock = Number(item.stock);
+                const minStock = Number(item.minStock);
+                const recommended = Math.max(1, minStock - stock);
+
+                const imgHtml = item.image
+                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" referrerpolicy="no-referrer" onclick="openImageLightbox('${item.id}')" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in shadow-2xs">`
+                    : `<div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[11px] font-bold text-slate-400">NoImage</span></div>`;
+
+                return `
+                    <div class="p-3.5 sm:p-4 hover:bg-rose-50/40 transition flex items-start gap-3 sm:gap-4">
+                        ${imgHtml}
+                        <div class="flex-1 min-w-0 space-y-1.5">
+                            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${meta.badgeClass}">${meta.label}</span>
+                                <span class="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(item.code)}</span>
+                                ${item.jan ? `<span class="font-mono text-[11px] text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">JAN: ${escapeHtml(item.jan)}</span>` : ''}
+                                <span class="font-semibold text-slate-600 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
+                            </div>
+
+                            <div class="font-bold text-sm sm:text-base text-slate-900 leading-snug break-words">${escapeHtml(item.name)}</div>
+
+                            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-rose-100/70">
+                                <div class="flex flex-wrap items-center gap-2 text-xs">
+                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">${escapeHtml(item.spec)}</span>` : ''}
+                                    <span>現在庫: <strong class="text-rose-600">${stock}${meta.unit}</strong></span>
+                                    <span>必要在庫: <strong>${minStock}${meta.unit}</strong></span>
+                                    <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">推奨購入: +${recommended}${meta.unit}</span>
+                                </div>
+                                <div class="inline-flex items-center gap-1.5 ml-auto">
+                                    <button type="button" onclick="openStockModal('ADJUST', '${item.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-2xs">
+                                        購入反映
+                                    </button>
+                                    <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                                        <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            ${item.memo ? `<p class="text-xs text-slate-600 bg-white/80 px-2.5 py-1.5 rounded-lg border border-rose-100 leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(item.memo)}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderHistory() {
+            const listEl = document.getElementById('history-list');
+            const emptyEl = document.getElementById('history-empty');
+            if (!listEl) return;
+
+            const typeFilter = document.getElementById('history-filter-type')?.value || 'ALL';
+            let filtered = [...historyLogs];
+            if (typeFilter !== 'ALL') {
+                filtered = filtered.filter(l => l.type === typeFilter);
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+            listEl.innerHTML = filtered.map(log => {
+                let badge = '';
+                if (log.type === 'IN') {
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">入庫・登録</span>`;
+                } else if (log.type === 'OUT') {
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">出庫・消費</span>`;
+                } else {
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700">実在庫調整</span>`;
+                }
+
+                const qtyNum = Number(log.qty || 0);
+                const qtyText = qtyNum > 0 ? `+${qtyNum}` : `${qtyNum}`;
+                const qtyClass = qtyNum > 0 ? 'text-emerald-600' : (qtyNum < 0 ? 'text-amber-700' : 'text-slate-600');
+
+                return `
+                    <div class="p-3.5 sm:p-4 hover:bg-slate-50 transition space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-2 text-xs">
+                            ${badge}
+                            <span class="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(log.itemCode)}</span>
+                            <span class="font-mono text-slate-400 ml-auto">${escapeHtml(log.timestamp)}</span>
+                        </div>
+                        <div class="font-bold text-sm text-slate-900 leading-snug break-words">${escapeHtml(log.itemName)}</div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-slate-100">
+                            <span class="text-slate-600 break-words">${escapeHtml(log.note || '-')}</span>
+                            <div class="flex items-center gap-3 ml-auto shrink-0">
+                                <span>変動: <strong class="text-sm ${qtyClass}">${qtyText}</strong></span>
+                                <span>処理後在庫: <strong class="text-sm text-slate-900">${log.afterStock}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // ==========================================
