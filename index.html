@@ -14,6 +14,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Html5-QRCode (バーコード・JANコードカメラ読み取り用) -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- Tesseract.js (ブラウザ単体動作の日本語・英語OCRエンジン) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body {
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
@@ -389,20 +391,25 @@
             <form id="item-form" onsubmit="saveItem(event)" class="p-6 space-y-4 overflow-y-auto">
                 <input type="hidden" id="item-id">
                 <input type="hidden" id="item-wishlist-mode" value="false">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">カテゴリ <span class="text-rose-500">*</span></label>
+                    <select id="item-category" onchange="handleCategoryChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="KIT">プラモデル</option>
+                        <option value="PART">パーツ・デカール・工具</option>
+                        <option value="PAINT">塗料・溶剤</option>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">カテゴリ <span class="text-rose-500">*</span></label>
-                        <select id="item-category" onchange="handleCategoryChange()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="KIT">プラモデル</option>
-                            <option value="PART">パーツ・デカール・工具</option>
-                            <option value="PAINT">塗料・溶剤</option>
-                        </select>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">品番 / 型番 <span class="text-rose-500">*</span></label>
+                        <input type="text" id="item-code" required placeholder="例: 5063043 / C-1" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">品番 / 型番 / JAN <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">JANコード</label>
                         <div class="flex gap-1.5">
-                            <input type="text" id="item-code" required placeholder="例: 5063043 / C-1" class="flex-1 min-w-0 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button type="button" onclick="openBarcodeScanner('ITEM_CODE')" title="スマホカメラでバーコード(JAN)をスキャン" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition shrink-0 flex items-center gap-1 shadow-2xs">
+                            <input type="text" id="item-jan" inputmode="numeric" onchange="if(this.value.trim().length >= 8) autoFillFromJanOrMakerCode(true)" placeholder="例: 4573102630438" class="flex-1 min-w-0 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <button type="button" onclick="openBarcodeScanner('ITEM_JAN')" title="スマホカメラでバーコード(JAN)をスキャン" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition shrink-0 flex items-center gap-1 shadow-2xs">
                                 <i data-lucide="scan-barcode" class="w-4 h-4 text-emerald-400"></i>
                                 <span>スキャン</span>
                             </button>
@@ -432,13 +439,19 @@
                 <!-- メーカーと型番から商品名・価格を自動入力バー -->
                 <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="text-xs text-indigo-900">
-                        <span class="font-bold">メーカー・型番から自動補完 (Web検索対応)</span>
-                        <p class="text-[11px] text-indigo-700">選択したメーカーと品番・JANから正式な品名・定価・規格を検索して自動入力します。</p>
+                        <span class="font-bold">JAN読取 ＆ メーカー・型番 Web自動探索</span>
+                        <p class="text-[11px] text-indigo-700">①JANコードからメーカー・型番・品名を自動登録し、未取得時は②メーカーと品番から品名・価格をWeb探索します。</p>
                     </div>
-                    <button type="button" id="btn-auto-lookup" onclick="autoFillFromMakerAndCode()" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition shrink-0">
+                    <button type="button" id="btn-auto-lookup" onclick="autoFillFromJanOrMakerCode(false)" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition shrink-0">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                        <span>商品名・定価を自動入力</span>
+                        <span>JAN / メーカー・品番で自動登録</span>
                     </button>
+                </div>
+
+                <!-- シリーズNo.（品名の上に配置・デフォルトは - ） -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">シリーズNo.</label>
+                    <input type="text" id="item-series-no" value="-" placeholder="例: No.03 / HGUC 234 / -" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
 
                 <!-- 品名 & 価格 -->
@@ -503,9 +516,9 @@
                                     <span>画像選択</span>
                                     <input type="file" id="item-image-file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
                                 </label>
-                                <button type="button" id="item-image-ocr-btn" onclick="extractProductFromImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition" title="画像内の文字を読み取って品名などに登録">
+                                <button type="button" id="item-image-ocr-btn" onclick="extractProductFromImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition" title="画像からOCRで文字を読み取り商品名に登録">
                                     <i data-lucide="scan-text" class="w-3.5 h-3.5"></i>
-                                    <span>画像から品名読取</span>
+                                    <span>OCR商品名読取</span>
                                 </button>
                                 <button type="button" id="item-image-rotate-btn" onclick="rotateCurrentItemImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition" title="90度回転して向きを微調整">
                                     <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
@@ -997,6 +1010,8 @@ function doGet(e) {
                 id: 'item-1',
                 category: 'KIT',
                 code: '5063043',
+                jan: '4573102630438',
+                seriesNo: '-',
                 maker: 'BANDAI SPIRITS (バンダイ)',
                 name: 'HG 1/144 ガンダムエアリアル',
                 spec: '1/144',
@@ -1013,6 +1028,8 @@ function doGet(e) {
                 id: 'item-2',
                 category: 'KIT',
                 code: '5061542',
+                jan: '4573102615428',
+                seriesNo: '-',
                 maker: 'BANDAI SPIRITS (バンダイ)',
                 name: 'MG 1/100 サザビー Ver.Ka',
                 spec: '1/100',
@@ -1029,6 +1046,8 @@ function doGet(e) {
                 id: 'item-3',
                 category: 'PART',
                 code: 'GD-112',
+                jan: '',
+                seriesNo: 'No.112',
                 maker: 'BANDAI SPIRITS (バンダイ)',
                 name: 'ガンダムデカール No.112 RG 1/144 ユニコーンガンダム用',
                 spec: '水転写デカール',
@@ -1045,6 +1064,8 @@ function doGet(e) {
                 id: 'item-4',
                 category: 'PAINT',
                 code: 'C-1',
+                jan: '4973028515015',
+                seriesNo: '-',
                 maker: 'GSIクレオス (Mr.HOBBY)',
                 name: 'Mr.カラー C1 ホワイト (光沢)',
                 spec: 'ラッカー系 10ml',
@@ -1061,6 +1082,8 @@ function doGet(e) {
                 id: 'item-5',
                 category: 'PAINT',
                 code: 'GS-03',
+                jan: '4582182330039',
+                seriesNo: '-',
                 maker: 'ガイアノーツ (Gaianotes)',
                 name: 'サーフェイサーエヴォ ブラック 50ml',
                 spec: 'サーフェイサー',
@@ -1076,17 +1099,17 @@ function doGet(e) {
         ];
 
         const KNOWN_PRODUCT_CATALOG = [
-            { code: '5063043', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ガンダムエアリアル', price: 1430, spec: '1/144', category: 'KIT' },
-            { code: '5061542', maker: 'BANDAI SPIRITS', name: 'MG 1/100 サザビー Ver.Ka', price: 9900, spec: '1/100', category: 'KIT' },
-            { code: '5060747', maker: 'BANDAI SPIRITS', name: 'RG 1/144 νガンダム', price: 4620, spec: '1/144', category: 'KIT' },
-            { code: '5065096', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ライジングフリーダムガンダム', price: 2640, spec: '1/144', category: 'KIT' },
-            { code: '5066284', maker: 'BANDAI SPIRITS', name: 'RG 1/144 RX-78-2 ガンダム Ver.2.0', price: 3850, spec: '1/144', category: 'KIT' },
-            { code: 'C-1', maker: 'GSIクレオス', name: 'Mr.カラー C1 ホワイト (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { code: 'C-2', maker: 'GSIクレオス', name: 'Mr.カラー C2 ブラック (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { code: 'C-3', maker: 'GSIクレオス', name: 'Mr.カラー C3 レッド (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { code: 'GS-03', maker: 'ガイアノーツ', name: 'サーフェイサーエヴォ ブラック 50ml', price: 880, spec: 'サーフェイサー', category: 'PAINT' },
-            { code: 'EX-01', maker: 'ガイアノーツ', name: 'Ex-01 Ex-ホワイト 50ml', price: 990, spec: 'ラッカー系 15ml', category: 'PAINT' },
-            { code: 'SPN-120', maker: 'ゴッドハンド', name: 'アルティメットニッパー 5.0 SPN-120', price: 5940, spec: '工具・消耗品', category: 'PART' }
+            { code: '5063043', jan: '4573102630438', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ガンダムエアリアル', price: 1430, spec: '1/144', category: 'KIT' },
+            { code: '5061542', jan: '4573102615428', maker: 'BANDAI SPIRITS', name: 'MG 1/100 サザビー Ver.Ka', price: 9900, spec: '1/100', category: 'KIT' },
+            { code: '5060747', jan: '4573102607478', maker: 'BANDAI SPIRITS', name: 'RG 1/144 νガンダム', price: 4620, spec: '1/144', category: 'KIT' },
+            { code: '5065096', jan: '4573102650962', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ライジングフリーダムガンダム', price: 2640, spec: '1/144', category: 'KIT' },
+            { code: '5066284', jan: '4573102662842', maker: 'BANDAI SPIRITS', name: 'RG 1/144 RX-78-2 ガンダム Ver.2.0', price: 3850, spec: '1/144', category: 'KIT' },
+            { code: 'C-1', jan: '4973028515015', maker: 'GSIクレオス', name: 'Mr.カラー C1 ホワイト (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'C-2', jan: '4973028515022', maker: 'GSIクレオス', name: 'Mr.カラー C2 ブラック (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'C-3', jan: '4973028515039', maker: 'GSIクレオス', name: 'Mr.カラー C3 レッド (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'GS-03', jan: '4582182330039', maker: 'ガイアノーツ', name: 'サーフェイサーエヴォ ブラック 50ml', price: 880, spec: 'サーフェイサー', category: 'PAINT' },
+            { code: 'EX-01', jan: '4582182300018', maker: 'ガイアノーツ', name: 'Ex-01 Ex-ホワイト 50ml', price: 990, spec: 'ラッカー系 15ml', category: 'PAINT' },
+            { code: 'SPN-120', jan: '4562349879120', maker: 'ゴッドハンド', name: 'アルティメットニッパー 5.0 SPN-120', price: 5940, spec: '工具・消耗品', category: 'PART' }
         ];
 
         const INITIAL_LOGS = [
@@ -1127,65 +1150,53 @@ function doGet(e) {
         let currentEditingImage = '';
         let confirmCallback = null;
         let html5QrScannerInstance = null;
-        let currentScannerTarget = 'ITEM_CODE';
+        let currentScannerTarget = 'ITEM_JAN';
 
         // ==========================================
-        // 初期化処理 & データ保存
+        // 初期化 & 別端末引き継ぎURLパラメータ処理
         // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
-            applyDeviceSyncFromUrl();
+            const importedViaLink = applyDeviceSyncFromUrlParams();
             loadDataFromStorage();
             updateSheetsStatusUI();
             if (window.lucide) {
                 lucide.createIcons();
             }
-            const pwInput = document.getElementById('login-password');
-            if (pwInput) pwInput.focus();
+
+            if (importedViaLink) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-shell').classList.remove('hidden');
+                switchTab('KIT');
+                refreshAllUI();
+                showToast('引き継ぎURLから連携設定・パスワードを適用しました', 'success');
+                if (localStorage.getItem(STORAGE_KEY_SHEETS_URL)) {
+                    loadFromGoogleSheets(true);
+                }
+            } else {
+                const pwInput = document.getElementById('login-password');
+                if (pwInput) pwInput.focus();
+            }
         });
 
-        function applyDeviceSyncFromUrl() {
+        function applyDeviceSyncFromUrlParams() {
             try {
-                const hash = window.location.hash || '';
-                const search = window.location.search || '';
-                let encodedParam = '';
+                const params = new URLSearchParams(window.location.search);
+                const syncToken = params.get('sync');
+                if (!syncToken) return false;
+                const decoded = JSON.parse(decodeURIComponent(escape(atob(syncToken))));
+                if (!decoded || typeof decoded !== 'object') return false;
 
-                if (hash.includes('sync=')) {
-                    const m = hash.match(/sync=([^&]+)/);
-                    if (m) encodedParam = decodeURIComponent(m[1]);
-                } else if (search.includes('sync=')) {
-                    const params = new URLSearchParams(search);
-                    encodedParam = params.get('sync') || '';
-                }
-
-                if (!encodedParam) return;
-
-                const jsonStr = decodeURIComponent(escape(atob(encodedParam)));
-                const cfg = JSON.parse(jsonStr);
-                if (!cfg || typeof cfg !== 'object') return;
-
-                if (cfg.gasUrl) {
-                    localStorage.setItem(STORAGE_KEY_SHEETS_URL, cfg.gasUrl);
-                }
-                if (cfg.editUrl) {
-                    localStorage.setItem(STORAGE_KEY_SHEETS_EDIT_URL, cfg.editUrl);
-                }
-                if (cfg.password) {
-                    localStorage.setItem(STORAGE_KEY_PASSWORD, cfg.password);
-                }
-                localStorage.setItem(STORAGE_KEY_SHEETS_AUTO, cfg.autoSync !== false ? 'true' : 'false');
+                if (decoded.gasUrl) localStorage.setItem(STORAGE_KEY_SHEETS_URL, decoded.gasUrl);
+                if (decoded.editUrl) localStorage.setItem(STORAGE_KEY_SHEETS_EDIT_URL, decoded.editUrl);
+                if (decoded.password) localStorage.setItem(STORAGE_KEY_PASSWORD, decoded.password);
+                localStorage.setItem(STORAGE_KEY_SHEETS_AUTO, 'true');
                 localStorage.setItem(STORAGE_KEY_SHEETS_AUTO_LOAD, 'true');
 
-                // URLから機密パラメータを消去してクリーンなアドレスバーに戻す
-                if (window.history && window.history.replaceState) {
-                    const cleanUrl = window.location.pathname;
-                    window.history.replaceState(null, '', cleanUrl);
-                }
-
-                setTimeout(() => {
-                    showToast('別端末からスプレッドシート連携設定とパスワードを引き継ぎました', 'success');
-                }, 300);
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+                return true;
             } catch (e) {
-                console.error('Device sync URL parse error:', e);
+                return false;
             }
         }
 
@@ -1193,39 +1204,29 @@ function doGet(e) {
             const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL) || '';
             const editUrl = localStorage.getItem(STORAGE_KEY_SHEETS_EDIT_URL) || '';
             const password = getSystemPassword();
-            const autoSync = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false';
 
             if (!gasUrl) {
-                showToast('先に「Google Apps Script ウェブアプリURL」を入力して保存してください', 'info');
+                showToast('先にGoogle Apps Script ウェブアプリURLを設定・保存してください', 'info');
                 return;
             }
 
-            const payload = {
-                gasUrl,
-                editUrl,
-                password,
-                autoSync
-            };
+            const payload = { gasUrl, editUrl, password };
+            const token = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+            const baseUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${baseUrl}?sync=${encodeURIComponent(token)}`;
 
+            const tempInput = document.createElement('input');
+            tempInput.value = shareUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
             try {
-                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-                const baseUrl = window.location.origin + window.location.pathname;
-                const shareUrl = `${baseUrl}#sync=${encodeURIComponent(encoded)}`;
-
-                const tempInput = document.createElement('textarea');
-                tempInput.value = shareUrl;
-                tempInput.style.position = 'fixed';
-                tempInput.style.opacity = '0';
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                tempInput.setSelectionRange(0, 99999);
                 document.execCommand('copy');
-                document.body.removeChild(tempInput);
-
-                showToast('別端末引き継ぎ用URLをコピーしました！他の端末で開いてブックマークしてください', 'success');
+                showToast('別端末引き継ぎ用URLをコピーしました。他のスマホやPCで開いてください', 'success');
             } catch (e) {
-                showToast('引き継ぎURLの生成に失敗しました', 'error');
+                showToast('URLのコピーに失敗しました', 'error');
             }
+            document.body.removeChild(tempInput);
         }
 
         function loadDataFromStorage() {
@@ -1258,7 +1259,7 @@ function doGet(e) {
                 localStorage.setItem(STORAGE_KEY_SPECS, JSON.stringify(specsList));
                 localStorage.setItem(STORAGE_KEY_OUT_REASONS, JSON.stringify(outReasonsList));
             } catch (e) {
-                showToast('ブラウザの保存容量上限に達しました。不要な画像を削除するかJSONバックアップを取ってください。', 'error');
+                showToast('ブラウザの保存容量上限に達しました。不要な画像を削除してください', 'error');
             }
 
             if (!skipCloudSync) {
@@ -1357,11 +1358,43 @@ function doGet(e) {
             }
             localStorage.setItem(STORAGE_KEY_PASSWORD, nextPw);
             closePasswordModal();
+            saveData();
             showToast('パスワードを変更しました', 'success');
+        }
 
-            const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
-            if (gasUrl) {
-                syncToGoogleSheets(false);
+        // ==========================================
+        // 共通ヘルパー関数
+        // ==========================================
+        function getCategoryMeta(category) {
+            switch (category) {
+                case 'KIT':
+                    return {
+                        label: 'プラモデル',
+                        unit: '個',
+                        badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                        icon: 'bot'
+                    };
+                case 'PART':
+                    return {
+                        label: 'パーツ・工具',
+                        unit: '点',
+                        badgeClass: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+                        icon: 'wrench'
+                    };
+                case 'PAINT':
+                    return {
+                        label: '塗料・溶剤',
+                        unit: '本',
+                        badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
+                        icon: 'droplets'
+                    };
+                default:
+                    return {
+                        label: 'その他',
+                        unit: '個',
+                        badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
+                        icon: 'package'
+                    };
             }
         }
 
@@ -1489,6 +1522,8 @@ function doGet(e) {
             if (search) {
                 filtered = filtered.filter(item =>
                     (item.code || '').toLowerCase().includes(search) ||
+                    (item.jan || '').toLowerCase().includes(search) ||
+                    (item.seriesNo || '').toLowerCase().includes(search) ||
                     (item.name || '').toLowerCase().includes(search) ||
                     (item.maker || '').toLowerCase().includes(search) ||
                     (item.spec || '').toLowerCase().includes(search) ||
@@ -1536,11 +1571,11 @@ function doGet(e) {
                 }
 
                 const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-85 transition">`
-                    : `<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
+                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-85 transition">`
+                    : `<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
 
                 const colorChip = (item.category === 'PAINT' && item.color)
-                    ? `<span class="inline-block w-3.5 h-3.5 rounded-full border border-slate-400 shrink-0 shadow-2xs mt-0.5" style="background-color: ${escapeHtml(item.color)}" title="カラー見本"></span>`
+                    ? `<span class="inline-block w-3.5 h-3.5 rounded-full border border-slate-400 shrink-0 shadow-2xs" style="background-color: ${escapeHtml(item.color)}" title="カラー見本"></span>`
                     : '';
 
                 const priceText = (item.price !== undefined && item.price !== null && item.price !== '' && Number(item.price) > 0)
@@ -1548,56 +1583,60 @@ function doGet(e) {
                     : '-';
 
                 return `
-                    <div class="p-3.5 sm:p-4 hover:bg-slate-50/80 transition space-y-2.5">
-                        <!-- 1行目: 状態バッジ ・ 品番/JAN ・ メーカー名 ・ 編集/削除ボタン -->
+                    <div class="p-3.5 sm:p-4 hover:bg-slate-50/90 transition space-y-2.5">
+                        <!-- 1行目: 状態バッジ + 品番/JAN + シリーズNo + メーカー名 + 編集/削除ボタン -->
                         <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center flex-wrap gap-1.5 sm:gap-2 min-w-0">
+                            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
                                 ${statusBadge}
-                                <span class="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">${escapeHtml(item.code)}</span>
-                                <span class="text-xs font-semibold text-slate-600 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
+                                <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(item.code)}</span>
+                                ${item.jan ? `<span class="font-mono text-[11px] text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">JAN: ${escapeHtml(item.jan)}</span>` : ''}
+                                ${item.seriesNo && item.seriesNo !== '-' ? `<span class="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">シリーズ: ${escapeHtml(item.seriesNo)}</span>` : ''}
+                                <span class="text-xs font-semibold text-slate-500 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
                             </div>
-                            <div class="flex items-center space-x-1 shrink-0">
-                                <button type="button" onclick="openItemModal('${item.id}')" title="編集" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg border border-slate-200 bg-white transition">
+                            <div class="inline-flex items-center space-x-1 shrink-0">
+                                <button type="button" onclick="openItemModal('${item.id}')" title="編集" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
                                     <i data-lucide="edit-3" class="w-4 h-4 pointer-events-none"></i>
                                 </button>
-                                <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 bg-white transition">
+                                <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
                                     <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- 2行目: 商品画像 ・ 品名 ・ 規格/入手方法バッジ/定価 -->
+                        <!-- 2行目: 商品画像 + 品名 + 規格・入手方法バッジ + 定価 -->
                         <div class="flex items-start gap-3">
                             ${imgHtml}
                             <div class="flex-1 min-w-0 space-y-1.5">
                                 <div class="font-bold text-sm sm:text-base text-slate-900 flex items-start gap-1.5 leading-snug break-words">
-                                    ${colorChip}
+                                    ${colorChip ? `<span class="mt-1">${colorChip}</span>` : ''}
                                     <span>${escapeHtml(item.name)}</span>
                                 </div>
-                                <div class="flex flex-wrap items-center gap-1.5">
-                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
-                                    ${item.acquisition ? `<span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">${escapeHtml(item.acquisition)}</span>` : ''}
-                                    <span class="text-[11px] px-2 py-0.5 rounded bg-slate-50 text-slate-700 font-mono font-semibold border border-slate-200">定価: ${priceText}</span>
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
+                                        ${item.acquisition ? `<span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">${escapeHtml(item.acquisition)}</span>` : ''}
+                                    </div>
+                                    <span class="font-mono text-xs sm:text-sm font-bold text-slate-700">定価: ${priceText}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 3行目: 現在庫 / 必要在庫 ・ クイック入出庫ボタン ・ 更新日/メモ -->
+                        <!-- 3行目: 現在庫 / 必要在庫 + クイック入出庫(- / +) + 備考メモ・更新日 -->
                         <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div class="flex items-center justify-between sm:justify-start gap-3">
-                                <div class="flex items-baseline gap-2.5">
-                                    <span class="text-xs text-slate-500">現在庫: <strong class="text-base sm:text-lg font-bold ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">${stock}</strong><span class="text-xs text-slate-500 ml-0.5">${meta.unit}</span></span>
-                                    <span class="text-xs text-slate-400">/</span>
-                                    <span class="text-xs text-slate-500">必要在庫: <strong class="font-semibold text-slate-700">${minStock}</strong><span class="text-xs text-slate-400 ml-0.5">${meta.unit}</span></span>
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-xs text-slate-500">現在庫:</span>
+                                    <span class="font-bold text-base sm:text-lg ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">${stock}<span class="text-xs font-normal text-slate-500 ml-0.5">${meta.unit}</span></span>
+                                    <span class="text-xs text-slate-400">/ 必要: ${minStock}${meta.unit}</span>
                                 </div>
-                                <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-2xs shrink-0">
-                                    <button type="button" onclick="quickAdjust('${item.id}', -1)" title="1つ出庫 (-1)" class="px-3 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-bold text-sm transition">-</button>
+                                <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-2xs">
+                                    <button type="button" onclick="quickAdjust('${item.id}', -1)" title="1つ出庫 (-1)" class="px-3 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-bold transition">-</button>
                                     <span class="w-px h-4 bg-slate-200"></span>
-                                    <button type="button" onclick="quickAdjust('${item.id}', 1)" title="1つ入庫 (+1)" class="px-3 py-1 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-sm transition">+</button>
+                                    <button type="button" onclick="quickAdjust('${item.id}', 1)" title="1つ入庫 (+1)" class="px-3 py-1 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-bold transition">+</button>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between sm:justify-end gap-2 min-w-0">
-                                ${item.memo ? `<p class="text-xs text-slate-600 bg-slate-50 px-2.5 py-1 rounded border border-slate-100 truncate max-w-full sm:max-w-xs" title="${escapeHtml(item.memo)}">${escapeHtml(item.memo)}</p>` : ''}
+                            <div class="flex items-center justify-between sm:justify-end gap-2 text-xs text-slate-500 min-w-0">
+                                ${item.memo ? `<span class="text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded truncate max-w-[230px] sm:max-w-xs" title="${escapeHtml(item.memo)}">${escapeHtml(item.memo)}</span>` : '<span></span>'}
                                 <span class="text-[11px] text-slate-400 shrink-0">更新: ${escapeHtml((item.updatedAt || '').split(' ')[0] || '-')}</span>
                             </div>
                         </div>
@@ -1660,41 +1699,42 @@ function doGet(e) {
                 const recommended = Math.max(1, minStock - stock);
 
                 const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 object-cover rounded-lg border border-slate-200 shrink-0 cursor-zoom-in">`
-                    : `<div class="w-14 h-14 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
+                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" onclick="openImageLightbox('${item.id}')" class="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in">`
+                    : `<div class="w-14 h-14 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
 
                 return `
                     <div class="p-3.5 sm:p-4 hover:bg-rose-50/40 transition space-y-2.5">
-                        <!-- 1行目: カテゴリバッジ ・ 品番 ・ メーカー ・ 削除ボタン -->
+                        <!-- 1行目: カテゴリ + 品番/JAN + メーカー + 削除 -->
                         <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center flex-wrap gap-1.5 min-w-0">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${meta.badgeClass} shrink-0">${meta.label}</span>
-                                <span class="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">${escapeHtml(item.code)}</span>
-                                <span class="text-xs font-semibold text-slate-600 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
+                            <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${meta.badgeClass}">${meta.label}</span>
+                                <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(item.code)}</span>
+                                ${item.jan ? `<span class="font-mono text-[11px] text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">JAN: ${escapeHtml(item.jan)}</span>` : ''}
+                                <span class="text-xs font-semibold text-slate-500 truncate">${escapeHtml(item.maker || 'メーカー未指定')}</span>
                             </div>
-                            <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 bg-white transition shrink-0">
+                            <button type="button" onclick="deleteItem('${item.id}')" title="削除" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0">
                                 <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
                             </button>
                         </div>
 
-                        <!-- 2行目: 画像 ・ 品名 ・ 規格 -->
+                        <!-- 2行目: 画像 + 品名 + 規格 -->
                         <div class="flex items-start gap-3">
                             ${imgHtml}
                             <div class="flex-1 min-w-0 space-y-1">
                                 <div class="font-bold text-sm sm:text-base text-slate-900 leading-snug break-words">${escapeHtml(item.name)}</div>
                                 <div class="flex flex-wrap items-center gap-1.5">
-                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
-                                    ${item.memo ? `<span class="text-xs text-slate-600 truncate max-w-full">${escapeHtml(item.memo)}</span>` : ''}
+                                    ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">${escapeHtml(item.spec)}</span>` : ''}
+                                    ${item.memo ? `<span class="text-xs text-slate-600 bg-white px-2 py-0.5 rounded border border-rose-100">${escapeHtml(item.memo)}</span>` : ''}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 3行目: 現在庫 / 必要在庫 / 推奨購入数 ・ 購入反映ボタン -->
-                        <div class="pt-2 border-t border-rose-100/80 flex items-center justify-between gap-2">
-                            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
-                                <span class="text-slate-600">現在庫: <strong class="text-sm font-bold text-rose-600">${stock}</strong>${meta.unit}</span>
-                                <span class="text-slate-600">必要在庫: <strong class="font-semibold text-slate-800">${minStock}</strong>${meta.unit}</span>
-                                <span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">推奨購入: +${recommended}${meta.unit}</span>
+                        <!-- 3行目: 在庫状況 + 推奨購入数 + 購入反映ボタン -->
+                        <div class="pt-2 border-t border-rose-100/70 flex items-center justify-between gap-2">
+                            <div class="flex flex-wrap items-baseline gap-3 text-xs">
+                                <span>現在庫: <strong class="text-sm text-rose-600">${stock}${meta.unit}</strong></span>
+                                <span class="text-slate-500">必要: ${minStock}${meta.unit}</span>
+                                <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">推奨購入: +${recommended}${meta.unit}</span>
                             </div>
                             <button type="button" onclick="openStockModal('ADJUST', '${item.id}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-2xs shrink-0">
                                 購入反映
@@ -1729,11 +1769,11 @@ function doGet(e) {
             listEl.innerHTML = filtered.map(log => {
                 let badge = '';
                 if (log.type === 'IN') {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 shrink-0">入庫・登録</span>`;
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">入庫・登録</span>`;
                 } else if (log.type === 'OUT') {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 shrink-0">出庫・消費</span>`;
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">出庫・消費</span>`;
                 } else {
-                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 shrink-0">実在庫調整</span>`;
+                    badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700">実在庫調整</span>`;
                 }
 
                 const qtyNum = Number(log.qty || 0);
@@ -1742,23 +1782,23 @@ function doGet(e) {
 
                 return `
                     <div class="p-3.5 sm:p-4 hover:bg-slate-50 transition space-y-1.5">
-                        <!-- 1行目: 区分バッジ ・ 品番 ・ 日時 -->
+                        <!-- 1行目: 区分バッジ + 品番 + 日時 -->
                         <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center gap-2 min-w-0">
+                            <div class="flex items-center gap-2">
                                 ${badge}
-                                <span class="font-mono text-xs font-semibold text-slate-700 truncate">${escapeHtml(log.itemCode)}</span>
+                                <span class="font-mono text-xs font-bold text-slate-700">${escapeHtml(log.itemCode)}</span>
                             </div>
-                            <span class="text-[11px] font-mono text-slate-400 shrink-0">${escapeHtml(log.timestamp)}</span>
+                            <span class="text-xs font-mono text-slate-400">${escapeHtml(log.timestamp)}</span>
                         </div>
                         <!-- 2行目: 品名 -->
                         <div class="font-bold text-sm text-slate-900 leading-snug break-words">${escapeHtml(log.itemName)}</div>
-                        <!-- 3行目: 変動数 / 処理後在庫 ・ 備考メモ -->
-                        <div class="pt-1 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-                            <div class="flex items-center gap-3 shrink-0">
-                                <span class="text-slate-500">変動: <strong class="font-bold text-sm ${qtyClass}">${qtyText}</strong></span>
-                                <span class="text-slate-500">処理後在庫: <strong class="font-bold text-slate-800">${log.afterStock}</strong></span>
+                        <!-- 3行目: 変動数・処理後在庫 + 備考 -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <span>変動: <strong class="text-sm ${qtyClass}">${qtyText}</strong></span>
+                                <span class="text-slate-600">処理後在庫: <strong>${log.afterStock}</strong></span>
                             </div>
-                            <span class="text-slate-600 break-words">${escapeHtml(log.note || '-')}</span>
+                            <span class="text-slate-500 break-words">${escapeHtml(log.note || '-')}</span>
                         </div>
                     </div>
                 `;
@@ -1766,126 +1806,300 @@ function doGet(e) {
         }
 
         // ==========================================
-        // メーカー・型番・JANからの自動補完（Web検索グラウンディング対応）
+        // 2段階自動登録:
+        // 第1段階: JANコードからメーカー・型番・品名・価格を自動登録
+        // 第2段階: JANで取得できない場合、メーカーと品番から品名・価格をWeb探索
         // ==========================================
-        async function autoFillFromMakerAndCode() {
-            const codeRaw = (document.getElementById('item-code').value || '').trim();
+        function applyLookupDataToForm(data, options = {}) {
+            if (!data || !data.name) return false;
+            const { overwriteCode = true, overwriteMaker = true } = options;
+
+            document.getElementById('item-name').value = data.name;
+
+            const codeInput = document.getElementById('item-code');
+            if (codeInput && data.code && (overwriteCode || !codeInput.value.trim())) {
+                codeInput.value = data.code;
+            }
+
+            const janInput = document.getElementById('item-jan');
+            if (janInput && data.jan && !janInput.value.trim()) {
+                janInput.value = data.jan;
+            }
+
+            const seriesInput = document.getElementById('item-series-no');
+            if (seriesInput && data.seriesNo && data.seriesNo !== '-' && (!seriesInput.value.trim() || seriesInput.value.trim() === '-')) {
+                seriesInput.value = data.seriesNo;
+            }
+
+            if (data.price && Number(data.price) > 0) {
+                document.getElementById('item-price').value = Math.round(Number(data.price));
+            }
+
+            let targetMaker = document.getElementById('item-maker').value || '';
+            if (data.maker && (overwriteMaker || !targetMaker)) {
+                const matched = makersList.find(m => m.includes(data.maker) || data.maker.includes(m.split(' ')[0])) || data.maker;
+                if (matched && !makersList.includes(matched)) {
+                    makersList.push(matched);
+                }
+                targetMaker = matched;
+            }
+
+            let targetSpec = document.getElementById('item-spec').value || '';
+            if (data.spec && !targetSpec) {
+                const matchedSpec = specsList.find(s => data.spec.includes(s) || s.includes(data.spec)) || data.spec;
+                if (matchedSpec && !specsList.includes(matchedSpec)) {
+                    specsList.push(matchedSpec);
+                }
+                targetSpec = matchedSpec;
+            }
+
+            populateSelectOptions(targetMaker, targetSpec);
+            return true;
+        }
+
+        async function queryGeminiWebSearch(promptText) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: "あなたは日本のプラモデル・模型パーツ・模型塗料の製品カタログ検索システムです。Web検索結果に基づき、正確なメーカー名・型番（品番）・シリーズNo.・正式な商品名・メーカー希望小売価格（税込定価の数値のみ）・規格を特定し、純粋なJSONオブジェクトのみを返してください。" }]
+                }
+            };
+
+            let response = null;
+            const delays = [1000, 2000];
+            for (let attempt = 0; attempt <= delays.length; attempt++) {
+                response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok || attempt === delays.length) break;
+                await new Promise(r => setTimeout(r, delays[attempt]));
+            }
+
+            if (!response || !response.ok) return null;
+            const result = await response.json();
+            const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return null;
+            return JSON.parse(jsonMatch[0]);
+        }
+
+        async function searchByJanCode(janCode, categoryLabel) {
+            if (!janCode) return null;
+
+            // 1-A. 登録済み在庫マスタからJAN一致検索
+            const existingByJan = items.find(i => (i.jan || '').trim() === janCode || (i.code || '').trim() === janCode);
+            if (existingByJan) {
+                return {
+                    found: true,
+                    name: existingByJan.name,
+                    code: existingByJan.code,
+                    jan: janCode,
+                    seriesNo: existingByJan.seriesNo || '-',
+                    maker: existingByJan.maker || '',
+                    price: existingByJan.price || 0,
+                    spec: existingByJan.spec || ''
+                };
+            }
+
+            // 1-B. Gemini + Google Search でJANコードからメーカー・型番・品名・価格を検索
+            try {
+                const janPrompt = `日本のJANコード「${janCode}」（カテゴリ候補: ${categoryLabel}）の商品をWeb検索で特定し、以下のJSON形式のみで回答してください:
+{"found": trueまたはfalse, "maker": "メーカー名", "code": "メーカー品番・型番", "seriesNo": "シリーズ番号(なければ'-')", "name": "正式な商品名", "price": 税込定価の数値(円・不明時は0), "spec": "スケールや規格(例: 1/144, 1/100, ラッカー系 10ml 等)"}`;
+                const aiRes = await queryGeminiWebSearch(janPrompt);
+                if (aiRes && aiRes.found && aiRes.name) {
+                    return { ...aiRes, jan: janCode };
+                }
+            } catch (e) {
+                // フォールバックへ
+            }
+
+            // 1-C. 公開ショッピングAPI（Rakuten Ichiba Open Search / JSONP不要CORS対応エンドポイント）によるJAN補完
+            try {
+                const rakutenUrl = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?applicationId=1063322343836103248&keyword=${encodeURIComponent(janCode)}&hits=3`;
+                const rRes = await fetch(rakutenUrl);
+                if (rRes.ok) {
+                    const rJson = await rRes.json();
+                    const firstItem = rJson?.Items?.[0]?.Item;
+                    if (firstItem && firstItem.itemName) {
+                        const rawName = firstItem.itemName
+                            .replace(/【[^】]*】/g, '')
+                            .replace(/\[[^\]]*\]/g, '')
+                            .replace(/\(新品\)|（新品）|送料無料/g, '')
+                            .trim();
+                        let detectedMaker = '';
+                        if (/バンダイ|BANDAI/i.test(rawName)) detectedMaker = 'BANDAI SPIRITS (バンダイ)';
+                        else if (/タミヤ|TAMIYA/i.test(rawName)) detectedMaker = 'タミヤ (TAMIYA)';
+                        else if (/ハセガワ|HASEGAWA/i.test(rawName)) detectedMaker = 'ハセガワ (Hasegawa)';
+                        else if (/コトブキヤ|KOTOBUKIYA/i.test(rawName)) detectedMaker = 'コトブキヤ (KOTOBUKIYA)';
+                        else if (/クレオス|Mr\.カラー|Mr\.HOBBY/i.test(rawName)) detectedMaker = 'GSIクレオス (Mr.HOBBY)';
+                        else if (/ガイアノーツ/i.test(rawName)) detectedMaker = 'ガイアノーツ (Gaianotes)';
+
+                        const codeMatch = rawName.match(/\b([A-Z]{1,4}-?\d{1,4}|\d{7})\b/);
+                        const scaleMatch = rawName.match(/\b(1\/(?:144|100|72|48|35|24|12))\b/);
+
+                        return {
+                            found: true,
+                            maker: detectedMaker,
+                            code: codeMatch ? codeMatch[1] : '',
+                            jan: janCode,
+                            seriesNo: '-',
+                            name: rawName.slice(0, 70),
+                            price: Number(firstItem.itemPrice) || 0,
+                            spec: scaleMatch ? scaleMatch[1] : ''
+                        };
+                    }
+                }
+            } catch (e) {
+                // 第2段階へフォールバック
+            }
+
+            return null;
+        }
+
+        async function searchByMakerAndCode(makerVal, codeRaw, categoryLabel) {
+            if (!codeRaw && !makerVal) return null;
             const codeUpper = codeRaw.toUpperCase();
-            const makerVal = (document.getElementById('item-maker').value || '').trim();
-            const categoryVal = document.getElementById('item-category').value;
 
-            if (!codeRaw) {
-                showToast('品番・型番またはJANコードを入力してください', 'info');
-                return;
-            }
-
-            // 1. 既存マスタから同一品番を検索
-            const existing = items.find(i => (i.code || '').toUpperCase() === codeUpper);
+            // 2-A. 既存在庫マスタから検索
+            const existing = items.find(i => codeUpper && (i.code || '').toUpperCase() === codeUpper);
             if (existing) {
-                document.getElementById('item-name').value = existing.name;
-                if (existing.price) document.getElementById('item-price').value = existing.price;
-                if (existing.maker) populateSelectOptions(existing.maker, existing.spec || '');
-                showToast('登録済みマスタから商品名・定価を補完しました', 'success');
-                return;
+                return {
+                    found: true,
+                    name: existing.name,
+                    code: existing.code,
+                    jan: existing.jan || '',
+                    seriesNo: existing.seriesNo || '-',
+                    maker: existing.maker || makerVal,
+                    price: existing.price || 0,
+                    spec: existing.spec || ''
+                };
             }
 
-            // 2. ローカルカタログ辞書から検索
+            // 2-B. ローカルカタログ辞書から検索
             const foundLocal = KNOWN_PRODUCT_CATALOG.find(p =>
                 p.code.toUpperCase() === codeUpper &&
                 (!makerVal || makerVal.includes(p.maker) || p.maker.includes(makerVal))
             ) || KNOWN_PRODUCT_CATALOG.find(p => p.code.toUpperCase() === codeUpper);
 
             if (foundLocal) {
-                document.getElementById('item-name').value = foundLocal.name;
-                document.getElementById('item-price').value = foundLocal.price;
-                const matchedMaker = makersList.find(m => m.includes(foundLocal.maker)) || foundLocal.maker;
-                populateSelectOptions(matchedMaker, foundLocal.spec);
-                showToast(`「${foundLocal.name}」の情報を自動入力しました`, 'success');
+                return {
+                    found: true,
+                    name: foundLocal.name,
+                    code: foundLocal.code,
+                    seriesNo: '-',
+                    maker: foundLocal.maker,
+                    price: foundLocal.price,
+                    spec: foundLocal.spec
+                };
+            }
+
+            // 2-C. Gemini + Google Search でメーカーと品番から品名と価格をWeb探索
+            try {
+                const makerCodePrompt = `日本の模型・プラモデル・ホビー製品データベースとして、以下のメーカーと品番から製品情報をWeb検索して特定してください。
+メーカー: ${makerVal || '指定なし'}
+品番・型番: ${codeRaw || '指定なし'}
+カテゴリ候補: ${categoryLabel}
+
+以下のJSON形式のみで回答してください:
+{"found": trueまたはfalse, "name": "正式な商品名", "code": "型番・品番", "seriesNo": "シリーズ番号(なければ'-')", "maker": "メーカー名", "price": 税込定価の数値(円・不明時は0), "spec": "スケールや規格(例: 1/144, 1/100, ラッカー系 10ml 等)"}`;
+
+                const aiRes = await queryGeminiWebSearch(makerCodePrompt);
+                if (aiRes && aiRes.found && aiRes.name) {
+                    return aiRes;
+                }
+            } catch (e) {
+                // フォールバックへ
+            }
+
+            // 2-D. Rakuten公開検索APIによるメーカー＋品番フォールバック
+            try {
+                const kw = `${makerVal.split(' ')[0]} ${codeRaw}`.trim();
+                const rakutenUrl = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?applicationId=1063322343836103248&keyword=${encodeURIComponent(kw)}&hits=3`;
+                const rRes = await fetch(rakutenUrl);
+                if (rRes.ok) {
+                    const rJson = await rRes.json();
+                    const firstItem = rJson?.Items?.[0]?.Item;
+                    if (firstItem && firstItem.itemName) {
+                        const rawName = firstItem.itemName
+                            .replace(/【[^】]*】/g, '')
+                            .replace(/\[[^\]]*\]/g, '')
+                            .replace(/\(新品\)|（新品）|送料無料/g, '')
+                            .trim();
+                        const scaleMatch = rawName.match(/\b(1\/(?:144|100|72|48|35|24|12))\b/);
+                        return {
+                            found: true,
+                            name: rawName.slice(0, 70),
+                            code: codeRaw,
+                            seriesNo: '-',
+                            maker: makerVal,
+                            price: Number(firstItem.itemPrice) || 0,
+                            spec: scaleMatch ? scaleMatch[1] : ''
+                        };
+                    }
+                }
+            } catch (e) {
+                // 終了
+            }
+
+            return null;
+        }
+
+        async function autoFillFromJanOrMakerCode(triggeredByJan = false) {
+            const janRaw = (document.getElementById('item-jan')?.value || '').trim();
+            const codeRaw = (document.getElementById('item-code')?.value || '').trim();
+            const makerVal = (document.getElementById('item-maker')?.value || '').trim();
+            const categoryVal = document.getElementById('item-category').value;
+            const categoryLabel = getCategoryMeta(categoryVal).label;
+
+            if (!janRaw && !codeRaw) {
+                showToast('JANコードをスキャン・入力するか、メーカーと品番を入力してください', 'info');
                 return;
             }
 
-            // 3. Gemini API + Google Search グラウンディングで実在製品情報を検索
             const lookupBtn = document.getElementById('btn-auto-lookup');
             const origBtnHtml = lookupBtn ? lookupBtn.innerHTML : '';
             if (lookupBtn) {
                 lookupBtn.disabled = true;
-                lookupBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Web検索中...</span>`;
+                lookupBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>自動検索中...</span>`;
                 if (window.lucide) lucide.createIcons();
             }
 
             try {
-                const catLabel = getCategoryMeta(categoryVal).label;
-                const queryText = `日本の模型・プラモデル・ホビー製品データベースとして、以下の製品情報をGoogle検索して特定してください。
-メーカー: ${makerVal || '指定なし'}
-型番・品番・JANコード: ${codeRaw}
-カテゴリ候補: ${catLabel}
-
-以下のJSON形式のみで回答してください（説明文やマークダウン記号は不要です）:
-{"found": trueまたはfalse, "name": "正式な商品名", "maker": "メーカー名", "price": 税込定価の数値(円・不明時は0), "spec": "スケールや規格(例: 1/144, 1/100, ラッカー系 10ml 等)"}`;
-
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                const payload = {
-                    contents: [{ parts: [{ text: queryText }] }],
-                    tools: [{ "google_search": {} }],
-                    systemInstruction: {
-                        parts: [{ text: "あなたは日本のプラモデル・模型パーツ・模型塗料の製品カタログ検索アシスタントです。型番やJANコード、メーカー名から正確な商品名とメーカー希望小売価格（税込定価・数値のみ）を特定し、純粋なJSONオブジェクトのみを返してください。" }]
-                    }
-                };
-
-                let response = null;
-                const delays = [1000, 2000, 4000];
-                for (let attempt = 0; attempt <= delays.length; attempt++) {
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (response.ok || attempt === delays.length) break;
-                    await new Promise(r => setTimeout(r, delays[attempt]));
-                }
-
-                if (!response || !response.ok) {
-                    throw new Error('API request failed');
-                }
-
-                const result = await response.json();
-                const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error('JSON parse failed');
-                }
-
-                const parsed = JSON.parse(jsonMatch[0]);
-                if (parsed && parsed.found && parsed.name) {
-                    document.getElementById('item-name').value = parsed.name;
-                    if (parsed.price && Number(parsed.price) > 0) {
-                        document.getElementById('item-price').value = Math.round(Number(parsed.price));
+                // 【第1段階】JANコードがある場合、JANコードからメーカー・型番・品名を自動登録
+                if (janRaw) {
+                    const janResult = await searchByJanCode(janRaw, categoryLabel);
+                    if (janResult && janResult.found && janResult.name) {
+                        applyLookupDataToForm(janResult, { overwriteCode: true, overwriteMaker: true });
+                        showToast(`JANコードからメーカー・型番・品名（${janResult.name}）を自動登録しました`, 'success');
+                        return;
                     }
 
-                    let resolvedMaker = makerVal;
-                    if (!resolvedMaker && parsed.maker) {
-                        resolvedMaker = makersList.find(m => m.includes(parsed.maker) || parsed.maker.includes(m.split(' ')[0])) || parsed.maker;
-                        if (resolvedMaker && !makersList.includes(resolvedMaker)) {
-                            makersList.push(resolvedMaker);
-                        }
+                    // JANコードによる自動登録ができなかった場合
+                    if (!codeRaw && !makerVal) {
+                        showToast('JANコードから製品を特定できませんでした。メーカーと品番を入力して再度お試しください', 'info');
+                        return;
                     }
-
-                    let resolvedSpec = document.getElementById('item-spec').value || '';
-                    if (!resolvedSpec && parsed.spec) {
-                        resolvedSpec = specsList.find(s => parsed.spec.includes(s) || s.includes(parsed.spec)) || parsed.spec;
-                        if (resolvedSpec && !specsList.includes(resolvedSpec)) {
-                            specsList.push(resolvedSpec);
-                        }
-                    }
-
-                    populateSelectOptions(resolvedMaker, resolvedSpec);
-                    showToast(`Web検索から「${parsed.name}」の品名・定価を取得しました`, 'success');
-                } else {
-                    showToast('Web検索でも該当する製品情報が見つかりませんでした。手動で入力してください', 'info');
+                    showToast('JANコードで特定できなかったため、メーカーと品番からWeb探索を実行します...', 'info');
                 }
+
+                // 【第2段階】メーカーと品番から品名と価格をWeb探索して入力
+                if (codeRaw || makerVal) {
+                    const makerCodeResult = await searchByMakerAndCode(makerVal, codeRaw, categoryLabel);
+                    if (makerCodeResult && makerCodeResult.found && makerCodeResult.name) {
+                        applyLookupDataToForm(makerCodeResult, { overwriteCode: false, overwriteMaker: false });
+                        showToast(`メーカー・品番からWeb探索で「${makerCodeResult.name}」の品名・価格を入力しました`, 'success');
+                        return;
+                    }
+                }
+
+                showToast('Web探索でも該当する製品情報が見つかりませんでした。手動で入力してください', 'info');
             } catch (err) {
-                showToast('自動検索で製品を特定できませんでした。手動で入力してください', 'info');
+                showToast('自動登録処理中にエラーが発生しました。手動で入力してください', 'error');
             } finally {
                 if (lookupBtn) {
                     lookupBtn.disabled = false;
@@ -1893,6 +2107,10 @@ function doGet(e) {
                     if (window.lucide) lucide.createIcons();
                 }
             }
+        }
+
+        function autoFillFromMakerAndCode() {
+            autoFillFromJanOrMakerCode(false);
         }
 
         // ==========================================
@@ -2397,94 +2615,146 @@ function doGet(e) {
             const origHtml = ocrBtn ? ocrBtn.innerHTML : '';
             if (ocrBtn) {
                 ocrBtn.disabled = true;
-                ocrBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>文字読取中...</span>`;
+                ocrBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>OCR読取中...</span>`;
                 if (window.lucide) lucide.createIcons();
             }
 
+            const applyExtractedProduct = (parsed) => {
+                if (!parsed || !parsed.name) return false;
+                document.getElementById('item-name').value = parsed.name;
+
+                const codeInput = document.getElementById('item-code');
+                if (codeInput && !codeInput.value.trim() && parsed.code) {
+                    codeInput.value = parsed.code;
+                }
+
+                const janInput = document.getElementById('item-jan');
+                if (janInput && !janInput.value.trim() && parsed.jan) {
+                    janInput.value = parsed.jan;
+                }
+
+                const priceInput = document.getElementById('item-price');
+                if (priceInput && (!priceInput.value || Number(priceInput.value) === 0) && parsed.price && Number(parsed.price) > 0) {
+                    priceInput.value = Math.round(Number(parsed.price));
+                }
+
+                let currentMaker = document.getElementById('item-maker').value || '';
+                if (!currentMaker && parsed.maker) {
+                    currentMaker = makersList.find(m => m.includes(parsed.maker) || parsed.maker.includes(m.split(' ')[0])) || parsed.maker;
+                    if (currentMaker && !makersList.includes(currentMaker)) {
+                        makersList.push(currentMaker);
+                    }
+                }
+
+                let currentSpec = document.getElementById('item-spec').value || '';
+                if (!currentSpec && parsed.spec) {
+                    currentSpec = specsList.find(s => parsed.spec.includes(s) || s.includes(parsed.spec)) || parsed.spec;
+                    if (currentSpec && !specsList.includes(currentSpec)) {
+                        specsList.push(currentSpec);
+                    }
+                }
+
+                populateSelectOptions(currentMaker, currentSpec);
+                showToast(`OCRで「${parsed.name}」を読み取り商品名に登録しました`, 'success');
+                return true;
+            };
+
             try {
-                const prompt = `この商品画像（プラモデルの外箱・パーツ・デカール・塗料ボトルなど）に印刷されている文字を読み取り、製品情報を抽出してください。
+                // 1. Gemini Vision API による高精度パッケージ文字認識を試行
+                let parsedResult = null;
+                try {
+                    const prompt = `この商品画像（プラモデルの外箱・パーツ・デカール・塗料ボトルなど）に印刷されている文字を読み取り、製品情報を抽出してください。
 以下のJSON形式のみで回答してください（説明文やマークダウン記号は不要です）:
 {"name": "読み取った正式な商品名", "code": "読み取れた品番・型番・JANコード（不明時は空文字）", "maker": "メーカー名（不明時は空文字）", "spec": "スケールや規格（例: 1/144, 1/100, ラッカー系 10ml 等・不明時は空文字）", "price": 読み取れた税込定価の数値(不明時は0)}`;
 
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                const payload = {
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [
-                                { text: prompt },
-                                {
-                                    inlineData: {
-                                        mimeType: mimeType,
-                                        data: base64Data
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                    const payload = {
+                        contents: [
+                            {
+                                role: "user",
+                                parts: [
+                                    { text: prompt },
+                                    {
+                                        inlineData: {
+                                            mimeType: mimeType,
+                                            data: base64Data
+                                        }
                                     }
-                                }
-                            ]
-                        }
-                    ]
-                };
+                                ]
+                            }
+                        ]
+                    };
 
-                let response = null;
-                const delays = [1000, 2000, 4000];
-                for (let attempt = 0; attempt <= delays.length; attempt++) {
-                    response = await fetch(apiUrl, {
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    if (response.ok || attempt === delays.length) break;
-                    await new Promise(r => setTimeout(r, delays[attempt]));
-                }
 
-                if (!response || !response.ok) {
-                    throw new Error('OCR API request failed');
-                }
-
-                const result = await response.json();
-                const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error('OCR JSON parse failed');
-                }
-
-                const parsed = JSON.parse(jsonMatch[0]);
-                if (parsed && parsed.name) {
-                    document.getElementById('item-name').value = parsed.name;
-
-                    const codeInput = document.getElementById('item-code');
-                    if (codeInput && !codeInput.value.trim() && parsed.code) {
-                        codeInput.value = parsed.code;
-                    }
-
-                    const priceInput = document.getElementById('item-price');
-                    if (priceInput && (!priceInput.value || Number(priceInput.value) === 0) && parsed.price && Number(parsed.price) > 0) {
-                        priceInput.value = Math.round(Number(parsed.price));
-                    }
-
-                    let currentMaker = document.getElementById('item-maker').value || '';
-                    if (!currentMaker && parsed.maker) {
-                        currentMaker = makersList.find(m => m.includes(parsed.maker) || parsed.maker.includes(m.split(' ')[0])) || parsed.maker;
-                        if (currentMaker && !makersList.includes(currentMaker)) {
-                            makersList.push(currentMaker);
+                    if (response && response.ok) {
+                        const result = await response.json();
+                        const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            parsedResult = JSON.parse(jsonMatch[0]);
                         }
                     }
+                } catch (apiErr) {
+                    // API未設定・オフライン時はブラウザ内蔵Tesseract OCRへフォールバック
+                }
 
-                    let currentSpec = document.getElementById('item-spec').value || '';
-                    if (!currentSpec && parsed.spec) {
-                        currentSpec = specsList.find(s => parsed.spec.includes(s) || s.includes(parsed.spec)) || parsed.spec;
-                        if (currentSpec && !specsList.includes(currentSpec)) {
-                            specsList.push(currentSpec);
+                if (parsedResult && parsedResult.name && applyExtractedProduct(parsedResult)) {
+                    return;
+                }
+
+                // 2. ブラウザ内 Tesseract.js OCRエンジン（日本語+英語）でローカル光学文字認識を実行
+                if (typeof Tesseract !== 'undefined') {
+                    showToast('ブラウザ内OCRエンジンで文字を解析中（初回は言語データ読込のため数秒かかります）...', 'info');
+                    const dataUri = `data:${mimeType};base64,${base64Data}`;
+                    const ocrOutcome = await Tesseract.recognize(dataUri, 'jpn+eng');
+                    const rawOcrText = (ocrOutcome && ocrOutcome.data && ocrOutcome.data.text) ? ocrOutcome.data.text : '';
+
+                    const lines = rawOcrText
+                        .split(/\r?\n/)
+                        .map(l => l.replace(/\s+/g, ' ').trim())
+                        .filter(l => l.length >= 2 && !/^[\W_]+$/.test(l));
+
+                    if (lines.length > 0) {
+                        // グレード表記・スケール・塗料型番や日本語を含む最も商品名らしい行を優先抽出
+                        const priorityLine = lines.find(l => /(HG|MG|RG|PG|EG|SD|1\/\d+|Mr\.|ガイア|タミヤ|ハセガワ|コトブキヤ|ガンダム|デカール|カラー|[ァ-ヶー一-龠]{2,})/.test(l))
+                            || lines.slice().sort((a, b) => b.length - a.length)[0];
+
+                        const janMatch = rawOcrText.match(/\b(4[59]\d{11})\b/);
+                        const scaleMatch = rawOcrText.match(/\b(1\/(?:144|100|72|48|35|24|12))\b/);
+                        const priceMatch = rawOcrText.match(/[¥￥]\s*([0-9,]{3,6})/);
+
+                        let detectedMaker = '';
+                        if (/BANDAI|バンダイ/i.test(rawOcrText)) detectedMaker = 'BANDAI SPIRITS (バンダイ)';
+                        else if (/TAMIYA|タミヤ/i.test(rawOcrText)) detectedMaker = 'タミヤ (TAMIYA)';
+                        else if (/HASEGAWA|ハセガワ/i.test(rawOcrText)) detectedMaker = 'ハセガワ (Hasegawa)';
+                        else if (/KOTOBUKIYA|コトブキヤ/i.test(rawOcrText)) detectedMaker = 'コトブキヤ (KOTOBUKIYA)';
+                        else if (/CREOS|クレオス|Mr\.COLOR|Mr\.HOBBY/i.test(rawOcrText)) detectedMaker = 'GSIクレオス (Mr.HOBBY)';
+                        else if (/GAIANOTES|ガイアノーツ/i.test(rawOcrText)) detectedMaker = 'ガイアノーツ (Gaianotes)';
+
+                        const localParsed = {
+                            name: priorityLine.slice(0, 60),
+                            code: '',
+                            jan: janMatch ? janMatch[1] : '',
+                            maker: detectedMaker,
+                            spec: scaleMatch ? scaleMatch[1] : '',
+                            price: priceMatch ? Number(priceMatch[1].replace(/,/g, '')) : 0
+                        };
+
+                        if (applyExtractedProduct(localParsed)) {
+                            return;
                         }
                     }
-
-                    populateSelectOptions(currentMaker, currentSpec);
-                    showToast(`画像から「${parsed.name}」を読み取り登録しました`, 'success');
-                } else {
-                    showToast('画像から商品名を読み取れませんでした。角度や明るさを変えてお試しください', 'info');
                 }
+
+                showToast('画像から商品名を読み取れませんでした。文字がはっきり写るように撮影してお試しください', 'info');
             } catch (err) {
-                showToast('画像の文字読み取りに失敗しました', 'error');
+                showToast('OCR文字読み取り中にエラーが発生しました', 'error');
             } finally {
                 if (ocrBtn) {
                     ocrBtn.disabled = false;
@@ -2537,6 +2807,8 @@ function doGet(e) {
                 document.getElementById('item-id').value = item.id;
                 document.getElementById('item-category').value = item.category;
                 document.getElementById('item-code').value = item.code || '';
+                document.getElementById('item-jan').value = item.jan || '';
+                document.getElementById('item-series-no').value = item.seriesNo || '-';
                 populateSelectOptions(item.maker || '', item.spec || '');
                 document.getElementById('item-name').value = item.name || '';
                 document.getElementById('item-price').value = item.price || '';
@@ -2552,6 +2824,8 @@ function doGet(e) {
                 document.getElementById('item-id').value = '';
                 document.getElementById('item-category').value = targetCat;
                 document.getElementById('item-code').value = '';
+                document.getElementById('item-jan').value = '';
+                document.getElementById('item-series-no').value = '-';
                 populateSelectOptions('', '');
                 document.getElementById('item-name').value = '';
                 document.getElementById('item-price').value = '';
@@ -2596,6 +2870,8 @@ function doGet(e) {
             const isWishlist = document.getElementById('item-wishlist-mode').value === 'true';
             const category = document.getElementById('item-category').value;
             const code = document.getElementById('item-code').value.trim();
+            const jan = (document.getElementById('item-jan')?.value || '').trim();
+            const seriesNo = (document.getElementById('item-series-no')?.value || '').trim() || '-';
             const maker = document.getElementById('item-maker').value.trim();
             const name = document.getElementById('item-name').value.trim();
             const priceVal = document.getElementById('item-price').value;
@@ -2616,6 +2892,8 @@ function doGet(e) {
                         ...items[idx],
                         category,
                         code,
+                        jan,
+                        seriesNo,
                         maker,
                         name,
                         price,
@@ -2649,6 +2927,8 @@ function doGet(e) {
                     id: newId,
                     category,
                     code,
+                    jan,
+                    seriesNo,
                     maker,
                     name,
                     price,
@@ -3105,11 +3385,18 @@ function doGet(e) {
                             renderInventoryTable();
                         }
                         showToast(`JANコード「${decodedText}」で検索しました`, 'success');
+                    } else if (currentScannerTarget === 'ITEM_JAN') {
+                        const janInput = document.getElementById('item-jan');
+                        if (janInput) {
+                            janInput.value = decodedText;
+                            showToast(`JANコード「${decodedText}」を読み取りました。自動登録を実行します...`, 'info');
+                            autoFillFromJanOrMakerCode(true);
+                        }
                     } else {
                         const codeInput = document.getElementById('item-code');
                         if (codeInput) {
                             codeInput.value = decodedText;
-                            autoFillFromMakerAndCode();
+                            autoFillFromJanOrMakerCode(false);
                         }
                         showToast(`バーコード「${decodedText}」を読み取りました`, 'success');
                     }
