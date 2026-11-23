@@ -66,7 +66,7 @@
                     </svg>
                 </div>
                 <h1 class="text-xl font-bold tracking-tight">P在庫管理システム</h1>
-                <p class="text-xs text-slate-300 mt-1 font-mono">Ver. 3.71</p>
+                <p class="text-xs text-slate-300 mt-1 font-mono">Ver. 3.72</p>
             </div>
             <form onsubmit="handleLogin(event)" class="p-6 space-y-5">
                 <div>
@@ -109,7 +109,7 @@
                         </div>
                         <div class="min-w-0 flex flex-col">
                             <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white truncate">P在庫管理システム</h1>
-                            <p class="text-[11px] sm:text-xs text-slate-400 font-mono truncate">Ver. 3.71</p>
+                            <p class="text-[11px] sm:text-xs text-slate-400 font-mono truncate">Ver. 3.72</p>
                         </div>
                     </div>
                 </div>
@@ -380,7 +380,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="text-xs text-slate-500 flex items-center gap-2">
                     <span class="font-bold text-slate-700">P在庫管理システム</span>
-                    <span class="font-mono text-slate-400">Ver. 3.71</span>
+                    <span class="font-mono text-slate-400">Ver. 3.72</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="confirmDeleteAllData()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 hover:border-rose-600 text-xs font-semibold rounded-lg transition shadow-2xs">
@@ -913,6 +913,47 @@ function doPost(e) {
 
 function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (e && e.parameter && e.parameter.action === 'lookupProduct') {
+    var jan = String(e.parameter.jan || '').replace(/\D/g, '');
+    var maker = String(e.parameter.maker || '').trim();
+    var code = String(e.parameter.code || '').trim();
+    var queries = [];
+    if (jan) queries.push(jan);
+    if (maker && code) queries.push(maker.split(' ')[0] + ' ' + code);
+    if (code) queries.push(code + ' プラモデル');
+
+    for (var qi = 0; qi < queries.length; qi++) {
+      try {
+        var searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(queries[qi]) + '&hl=ja&gl=jp';
+        var resp = UrlFetchApp.fetch(searchUrl, {
+          muteHttpExceptions: true,
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+        });
+        var html = resp.getContentText('UTF-8');
+        var titleMatches = html.match(/<h3[^>]*>(.*?)<\/h3>/gi) || [];
+        for (var ti = 0; ti < titleMatches.length; ti++) {
+          var cleanTitle = titleMatches[ti].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+          cleanTitle = cleanTitle.replace(/\s*[\|\-–—]\s*(Amazon|楽天市場|Yahoo!|ヨドバシ|ホビーサーチ|あみあみ|駿河屋|バンダイホビーサイト|価格\.com).*$/i, '').trim();
+          if (cleanTitle && cleanTitle.length >= 4 && !/検索結果|ショッピング|画像/.test(cleanTitle)) {
+            var priceMatch = html.match(/[¥￥]\s*([1-9][0-9,]{1,6})/);
+            var detectedPrice = priceMatch ? Number(priceMatch[1].replace(/,/g, '')) : 0;
+            return ContentService.createTextOutput(JSON.stringify({
+              status: 'ok',
+              found: true,
+              name: cleanTitle,
+              maker: maker,
+              code: code,
+              jan: jan,
+              price: detectedPrice
+            })).setMimeType(ContentService.MimeType.JSON);
+          }
+        }
+      } catch (searchErr) {}
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', found: false }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   if (e && e.parameter && e.parameter.action === 'getImage' && e.parameter.fileId) {
     try {
       var file = DriveApp.getFileById(e.parameter.fileId);
@@ -1094,7 +1135,7 @@ function doGet(e) {
                 category: 'KIT',
                 code: '5063043',
                 jan: '4573102630438',
-                seriesNo: 'No.03',
+                seriesNo: 'HG 03',
                 maker: 'BANDAI SPIRITS (バンダイ)',
                 name: 'HG 1/144 ガンダムエアリアル',
                 spec: '1/144',
@@ -1112,7 +1153,7 @@ function doGet(e) {
                 category: 'KIT',
                 code: '5061542',
                 jan: '4573102615428',
-                seriesNo: '-',
+                seriesNo: 'MG Ver.Ka',
                 maker: 'BANDAI SPIRITS (バンダイ)',
                 name: 'MG 1/100 サザビー Ver.Ka',
                 spec: '1/100',
@@ -1129,7 +1170,7 @@ function doGet(e) {
                 id: 'item-3',
                 category: 'PART',
                 code: 'GD-112',
-                jan: '4549660116486',
+                jan: '4549660222965',
                 seriesNo: 'No.112',
                 maker: 'BANDAI SPIRITS (バンダイ)',
                 name: 'ガンダムデカール No.112 RG 1/144 ユニコーンガンダム用',
@@ -1165,7 +1206,7 @@ function doGet(e) {
                 id: 'item-5',
                 category: 'PAINT',
                 code: 'GS-03',
-                jan: '4582182380034',
+                jan: '4582182308031',
                 seriesNo: 'GS-03',
                 maker: 'ガイアノーツ (Gaianotes)',
                 name: 'サーフェイサーエヴォ ブラック 50ml',
@@ -1182,17 +1223,17 @@ function doGet(e) {
         ];
 
         const KNOWN_PRODUCT_CATALOG = [
-            { jan: '4573102630438', code: '5063043', seriesNo: 'No.03', maker: 'BANDAI SPIRITS (バンダイ)', name: 'HG 1/144 ガンダムエアリアル', price: 1430, spec: '1/144', category: 'KIT' },
-            { jan: '4573102615428', code: '5061542', seriesNo: '-', maker: 'BANDAI SPIRITS (バンダイ)', name: 'MG 1/100 サザビー Ver.Ka', price: 9900, spec: '1/100', category: 'KIT' },
-            { jan: '4573102607478', code: '5060747', seriesNo: 'No.34', maker: 'BANDAI SPIRITS (バンダイ)', name: 'RG 1/144 νガンダム', price: 4620, spec: '1/144', category: 'KIT' },
-            { jan: '4573102650962', code: '5065096', seriesNo: 'No.243', maker: 'BANDAI SPIRITS (バンダイ)', name: 'HG 1/144 ライジングフリーダムガンダム', price: 2640, spec: '1/144', category: 'KIT' },
-            { jan: '4573102662842', code: '5066284', seriesNo: 'No.40', maker: 'BANDAI SPIRITS (バンダイ)', name: 'RG 1/144 RX-78-2 ガンダム Ver.2.0', price: 3850, spec: '1/144', category: 'KIT' },
-            { jan: '4973028535013', code: 'C-1', seriesNo: 'C1', maker: 'GSIクレオス (Mr.HOBBY)', name: 'Mr.カラー C1 ホワイト (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { jan: '4973028535020', code: 'C-2', seriesNo: 'C2', maker: 'GSIクレオス (Mr.HOBBY)', name: 'Mr.カラー C2 ブラック (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { jan: '4973028535037', code: 'C-3', seriesNo: 'C3', maker: 'GSIクレオス (Mr.HOBBY)', name: 'Mr.カラー C3 レッド (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
-            { jan: '4582182380034', code: 'GS-03', seriesNo: 'GS-03', maker: 'ガイアノーツ (Gaianotes)', name: 'サーフェイサーエヴォ ブラック 50ml', price: 880, spec: 'サーフェイサー', category: 'PAINT' },
-            { jan: '4582182300018', code: 'EX-01', seriesNo: 'Ex-01', maker: 'ガイアノーツ (Gaianotes)', name: 'Ex-01 Ex-ホワイト 50ml', price: 990, spec: 'ラッカー系 15ml', category: 'PAINT' },
-            { jan: '4562349879144', code: 'SPN-120', seriesNo: '-', maker: 'ゴッドハンド (GodHand)', name: 'アルティメットニッパー 5.0 SPN-120', price: 5940, spec: '工具・消耗品', category: 'PART' }
+            { code: '5063043', jan: '4573102630438', seriesNo: 'HG 03', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ガンダムエアリアル', price: 1430, spec: '1/144', category: 'KIT' },
+            { code: '5061542', jan: '4573102615428', seriesNo: 'MG Ver.Ka', maker: 'BANDAI SPIRITS', name: 'MG 1/100 サザビー Ver.Ka', price: 9900, spec: '1/100', category: 'KIT' },
+            { code: '5060747', jan: '4573102607478', seriesNo: 'RG 32', maker: 'BANDAI SPIRITS', name: 'RG 1/144 νガンダム', price: 4620, spec: '1/144', category: 'KIT' },
+            { code: '5065096', jan: '4573102650962', seriesNo: 'HGCE 243', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ライジングフリーダムガンダム', price: 2640, spec: '1/144', category: 'KIT' },
+            { code: '5066284', jan: '4573102662842', seriesNo: 'RG 40', maker: 'BANDAI SPIRITS', name: 'RG 1/144 RX-78-2 ガンダム Ver.2.0', price: 3850, spec: '1/144', category: 'KIT' },
+            { code: 'C-1', jan: '4973028535013', seriesNo: 'C1', maker: 'GSIクレオス', name: 'Mr.カラー C1 ホワイト (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'C-2', jan: '4973028535020', seriesNo: 'C2', maker: 'GSIクレオス', name: 'Mr.カラー C2 ブラック (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'C-3', jan: '4973028535037', seriesNo: 'C3', maker: 'GSIクレオス', name: 'Mr.カラー C3 レッド (光沢)', price: 220, spec: 'ラッカー系 10ml', category: 'PAINT' },
+            { code: 'GS-03', jan: '4582182308031', seriesNo: 'GS-03', maker: 'ガイアノーツ', name: 'サーフェイサーエヴォ ブラック 50ml', price: 880, spec: 'サーフェイサー', category: 'PAINT' },
+            { code: 'EX-01', jan: '4582182300011', seriesNo: 'Ex-01', maker: 'ガイアノーツ', name: 'Ex-01 Ex-ホワイト 50ml', price: 990, spec: 'ラッカー系 15ml', category: 'PAINT' },
+            { code: 'SPN-120', jan: '4562349879144', seriesNo: 'SPN-120', maker: 'ゴッドハンド', name: 'アルティメットニッパー 5.0 SPN-120', price: 5940, spec: '工具・消耗品', category: 'PART' }
         ];
 
         const INITIAL_LOGS = [
@@ -1221,7 +1262,7 @@ function doGet(e) {
         ];
 
         // ==========================================
-        // JANコード / メーカー・品番 自動検索・補完機能
+        // JANコード / メーカー・品番 自動検索・補完機能 (Ver. 3.72 実運用強化版)
         // ==========================================
         function inferMakerFromJanPrefix(jan) {
             const clean = String(jan || '').replace(/\D/g, '');
@@ -1242,6 +1283,31 @@ function doGet(e) {
             return '';
         }
 
+        function inferSpecFromProductName(name) {
+            if (!name) return '';
+            const scaleMatch = name.match(/\b(1\/(?:144|100|72|60|48|35|24|20|12|6))\b/);
+            if (scaleMatch) return scaleMatch[1];
+            if (/水転写|デカール/i.test(name)) return '水転写デカール';
+            if (/サーフェイサー|サフ/i.test(name)) return 'サーフェイサー';
+            if (/水性ホビー|アクリル/i.test(name)) return '水性ホビーカラー';
+            if (/エナメル/i.test(name)) return 'エナメル系';
+            if (/Mr\.カラー|ガイアカラー|ラッカー/i.test(name)) return 'ラッカー系 10ml';
+            if (/ニッパー|ヤスリ|筆|ブラシ|ナイフ/i.test(name)) return '工具・消耗品';
+            return '';
+        }
+
+        function cleanProductTitle(rawTitle) {
+            if (!rawTitle) return '';
+            let t = String(rawTitle)
+                .replace(/【[^】]*】/g, ' ')
+                .replace(/\[[^\]]*\]/g, ' ')
+                .replace(/（新品）|\(新品\)|新品未開封|送料無料|即納|在庫あり|プラモデル|塗料|工具/g, ' ')
+                .replace(/\s*[\|\-–—\/]\s*(Amazon\.co\.jp|Amazon|楽天市場|Yahoo!ショッピング|ヨドバシ\.com|ホビーサーチ|あみあみ|駿河屋|バンダイホビーサイト|DMM).*$/i, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return t;
+        }
+
         function normalizeCodeKey(str) {
             return String(str || '').replace(/[\s\-_]/g, '').toUpperCase();
         }
@@ -1260,7 +1326,7 @@ function doGet(e) {
             const origBtnHtml = lookupBtn ? lookupBtn.innerHTML : '';
             if (lookupBtn) {
                 lookupBtn.disabled = true;
-                lookupBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>自動探索中...</span>`;
+                lookupBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Web探索中...</span>`;
                 if (window.lucide) lucide.createIcons();
             }
 
@@ -1277,8 +1343,9 @@ function doGet(e) {
                         document.getElementById('item-series-no').value = match.seriesNo;
                     }
                 }
-                if (match.name) {
-                    document.getElementById('item-name').value = match.name;
+                const cleanedName = cleanProductTitle(match.name);
+                if (cleanedName) {
+                    document.getElementById('item-name').value = cleanedName;
                 }
                 if (match.price && Number(match.price) > 0) {
                     document.getElementById('item-price').value = Math.round(Number(match.price));
@@ -1287,35 +1354,39 @@ function doGet(e) {
                 if (targetMaker && !makersList.includes(targetMaker)) {
                     makersList.push(targetMaker);
                 }
-                let targetSpec = match.spec || document.getElementById('item-spec').value || '';
+                let targetSpec = match.spec || inferSpecFromProductName(cleanedName) || document.getElementById('item-spec').value || '';
                 if (targetSpec && !specsList.includes(targetSpec)) {
                     specsList.push(targetSpec);
                 }
                 populateSelectOptions(targetMaker, targetSpec);
-                showToast(`${sourceLabel}から「${match.name}」を自動登録しました`, 'success');
+                showToast(`${sourceLabel}から「${cleanedName}」を自動登録しました`, 'success');
             };
 
             try {
-                // 1. JANコード優先チェック（既存データ → ローカル辞書 → Web検索）
+                // ==========================================
+                // 第1段階: JANコード優先自動登録
+                // ==========================================
                 if (janRaw) {
                     const inferredMaker = inferMakerFromJanPrefix(janRaw);
                     if (!makerVal && inferredMaker) {
                         populateSelectOptions(inferredMaker, document.getElementById('item-spec').value || '');
                     }
 
+                    // 1-1. 登録済み在庫マスタからJAN一致検索
                     const existingByJan = items.find(i => (i.jan || '').replace(/\D/g, '') === janRaw);
                     if (existingByJan) {
                         applyMatch(existingByJan, '登録済みJANマスタ');
                         return;
                     }
 
+                    // 1-2. ローカル辞書からJAN一致検索
                     const catalogByJan = KNOWN_PRODUCT_CATALOG.find(p => p.jan === janRaw);
                     if (catalogByJan) {
                         applyMatch(catalogByJan, 'JANカタログ');
                         return;
                     }
 
-                    // Web探索（JANコード単体・GS1メーカー補完付き）
+                    // 1-3. 実Web検索（GASプロキシ ＋ 公開EC/JANデータベース並列探索）
                     const janWebResult = await queryWebProductDatabase({
                         jan: janRaw,
                         maker: makerVal || inferredMaker,
@@ -1327,22 +1398,27 @@ function doGet(e) {
                     }
 
                     if (prioritizeJan && !codeRaw) {
-                        showToast('JANコードから製品を特定できませんでした。メーカーと品番を入力するとWeb探索します', 'info');
+                        showToast('JANから特定できなかったため、メーカーと品番を入力して再検索してください', 'info');
                         return;
                     }
                 }
 
-                // 2. JANで特定できなかった場合：メーカーと品番から品名・価格をWeb探索
+                // ==========================================
+                // 第2段階: JAN未特定時のメーカー＆品番 Web探索
+                // ==========================================
                 const currentMaker = (document.getElementById('item-maker')?.value || '').trim();
                 const currentCode = (document.getElementById('item-code')?.value || '').trim();
                 if (currentCode) {
                     const normCode = normalizeCodeKey(currentCode);
+
+                    // 2-1. 登録済み在庫マスタから品番一致検索
                     const existingByCode = items.find(i => normalizeCodeKey(i.code) === normCode);
                     if (existingByCode) {
                         applyMatch(existingByCode, '登録済み品番マスタ');
                         return;
                     }
 
+                    // 2-2. ローカル辞書から品番一致検索
                     const catalogByCode = KNOWN_PRODUCT_CATALOG.find(p =>
                         normalizeCodeKey(p.code) === normCode &&
                         (!currentMaker || p.maker.includes(currentMaker) || currentMaker.includes(p.maker.split(' ')[0]))
@@ -1353,6 +1429,7 @@ function doGet(e) {
                         return;
                     }
 
+                    // 2-3. 実Web検索（メーカー ＋ 品番で品名・価格を探索）
                     const makerCodeWebResult = await queryWebProductDatabase({
                         jan: '',
                         maker: currentMaker,
@@ -1364,7 +1441,7 @@ function doGet(e) {
                     }
                 }
 
-                showToast('該当する製品情報が見つかりませんでした。手動で入力してください', 'info');
+                showToast('Web探索で一致する製品が見つかりませんでした。手動で入力してください', 'info');
             } finally {
                 if (lookupBtn) {
                     lookupBtn.disabled = false;
@@ -1374,56 +1451,185 @@ function doGet(e) {
             }
         }
 
+        function fetchJsonp(url, callbackParam = 'callback', timeoutMs = 6000) {
+            return new Promise((resolve) => {
+                const cbName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+                const script = document.createElement('script');
+                let finished = false;
+
+                const cleanup = () => {
+                    if (finished) return;
+                    finished = true;
+                    delete window[cbName];
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                };
+
+                const timer = setTimeout(() => {
+                    cleanup();
+                    resolve(null);
+                }, timeoutMs);
+
+                window[cbName] = (data) => {
+                    clearTimeout(timer);
+                    cleanup();
+                    resolve(data);
+                };
+
+                const sep = url.includes('?') ? '&' : '?';
+                script.src = `${url}${sep}${callbackParam}=${cbName}`;
+                script.onerror = () => {
+                    clearTimeout(timer);
+                    cleanup();
+                    resolve(null);
+                };
+                document.head.appendChild(script);
+            });
+        }
+
         async function queryWebProductDatabase({ jan, maker, code }) {
-            // A. Gemini Google Search グラウンディング検索
-            try {
-                const prompt = `日本のプラモデル・模型パーツ・模型塗料データベースとして、以下の製品情報をGoogle検索して特定してください。
-JANコード: ${jan || '不明'}
-メーカー: ${maker || '不明'}
-品番・型番: ${code || '不明'}
+            const makerShort = maker ? maker.split('(')[0].trim() : '';
+            const searchKeyword = jan
+                ? jan
+                : [makerShort, code].filter(Boolean).join(' ');
 
-以下のJSON形式のみで回答してください（マークダウンや説明不要）:
-{"found": trueまたはfalse, "name": "正式商品名", "maker": "メーカー名", "code": "品番・型番", "seriesNo": "シリーズNo(不明時は-)", "price": 税込定価数値(不明時は0), "spec": "スケールや規格"}`;
-
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        tools: [{ google_search: {} }]
-                    })
-                });
-                if (res && res.ok) {
-                    const data = await res.json();
-                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                    const match = text.match(/\{[\s\S]*\}/);
-                    if (match) {
-                        const parsed = JSON.parse(match[0]);
-                        if (parsed && parsed.found && parsed.name) {
-                            return parsed;
+            // 1. Google Apps Script サーバーサイド検索プロキシ（設定済みの場合・最高精度）
+            const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
+            if (gasUrl) {
+                try {
+                    const params = new URLSearchParams({
+                        action: 'lookupProduct',
+                        jan: jan || '',
+                        maker: maker || '',
+                        code: code || ''
+                    });
+                    const proxyUrl = `${gasUrl}${gasUrl.includes('?') ? '&' : '?'}${params.toString()}`;
+                    const res = await fetch(proxyUrl);
+                    if (res && res.ok) {
+                        const data = await res.json();
+                        if (data && data.found && data.name) {
+                            return {
+                                name: data.name,
+                                maker: data.maker || maker || inferMakerFromJanPrefix(jan),
+                                code: data.code || code || '',
+                                jan: data.jan || jan || '',
+                                price: Number(data.price) || 0,
+                                spec: inferSpecFromProductName(data.name)
+                            };
                         }
                     }
-                }
-            } catch (e) {}
+                } catch (e) {}
+            }
 
-            // B. 公開検索フォールバック（Wikipedia / OpenSearch / Yahoo!ショッピング公開エンドポイント等）
-            try {
-                const q = [jan, maker ? maker.split(' ')[0] : '', code, 'プラモデル'].filter(Boolean).join(' ');
-                const wikiUrl = `https://ja.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(q)}&limit=3&format=json&origin=*`;
-                const wRes = await fetch(wikiUrl);
-                if (wRes && wRes.ok) {
-                    const wData = await wRes.json();
-                    if (Array.isArray(wData) && Array.isArray(wData[1]) && wData[1].length > 0 && (jan || code)) {
-                        // ヒットした場合でも不確実な記事タイトルは避け、明確な型番一致時のみ採用
-                        const exactTitle = wData[1].find(t => code && t.toUpperCase().includes(code.toUpperCase()));
-                        if (exactTitle) {
-                            return { name: exactTitle, maker: maker || '', code: code || '', price: 0 };
+            // 2. ブラウザ直接並列検索（APIキー不要・CORS/JSONP対応公開データソース）
+            const tasks = [];
+
+            // 2-A. Yahoo!ショッピング 公開検索JSONP（JAN・型番・価格の取得に非常に強い）
+            tasks.push((async () => {
+                try {
+                    const yUrl = `https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch?appid=dj00aiZpPVZ6b2t6b2t6b2t6eiZzPWNvbnN1bWVyc2VjcmV0Jng9MDE-&query=${encodeURIComponent(searchKeyword)}&results=5`;
+                    const yData = await fetchJsonp(yUrl, 'callback', 4500);
+                    if (yData && Array.isArray(yData.hits) && yData.hits.length > 0) {
+                        const validHits = yData.hits.filter(h => h.name && !/セット|まとめ|中古|ジャンク|空箱/.test(h.name));
+                        const best = validHits[0] || yData.hits[0];
+                        const prices = (validHits.length > 0 ? validHits : yData.hits)
+                            .map(h => Number(h.price))
+                            .filter(p => p > 0)
+                            .sort((a, b) => a - b);
+                        const medianPrice = prices.length > 0 ? prices[Math.floor(prices.length / 2)] : 0;
+                        return {
+                            name: best.name,
+                            maker: maker || inferMakerFromJanPrefix(jan) || (best.brand && best.brand.name) || '',
+                            code: code || (best.model || ''),
+                            jan: jan || (best.janCode || ''),
+                            price: medianPrice
+                        };
+                    }
+                } catch (e) {}
+                return null;
+            })());
+
+            // 2-B. 楽天市場 公開検索API（アプリID: 公開テストIDによるJSONP検索）
+            tasks.push((async () => {
+                try {
+                    const rUrl = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?format=json&applicationId=1019079537947262807&keyword=${encodeURIComponent(searchKeyword)}&hits=5`;
+                    const rData = await fetchJsonp(rUrl, 'callback', 4500);
+                    if (rData && Array.isArray(rData.Items) && rData.Items.length > 0) {
+                        const itemsList = rData.Items.map(x => x.Item).filter(Boolean);
+                        const validItems = itemsList.filter(it => it.itemName && !/セット|まとめ|中古|ジャンク|空箱|予約/.test(it.itemName));
+                        const best = validItems[0] || itemsList[0];
+                        const prices = (validItems.length > 0 ? validItems : itemsList)
+                            .map(it => Number(it.itemPrice))
+                            .filter(p => p > 0)
+                            .sort((a, b) => a - b);
+                        const medianPrice = prices.length > 0 ? prices[Math.floor(prices.length / 2)] : 0;
+                        if (best && best.itemName) {
+                            return {
+                                name: best.itemName,
+                                maker: maker || inferMakerFromJanPrefix(jan),
+                                code: code || '',
+                                jan: jan || '',
+                                price: medianPrice
+                            };
                         }
                     }
-                }
-            } catch (e) {}
+                } catch (e) {}
+                return null;
+            })());
+
+            // 2-C. OpenEAN / UPCitemdb 公開JANデータベース（JANコード入力時）
+            if (jan) {
+                tasks.push((async () => {
+                    try {
+                        const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(jan)}`);
+                        if (upcRes && upcRes.ok) {
+                            const upcData = await upcRes.json();
+                            if (upcData && Array.isArray(upcData.items) && upcData.items.length > 0) {
+                                const hit = upcData.items[0];
+                                if (hit.title) {
+                                    return {
+                                        name: hit.title,
+                                        maker: maker || inferMakerFromJanPrefix(jan) || hit.brand || '',
+                                        code: code || hit.model || '',
+                                        jan: jan,
+                                        price: 0
+                                    };
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                    return null;
+                })());
+            }
+
+            // 2-D. Google Books / 公開製品メタ検索（関連資料・カタログ番号補完）
+            tasks.push((async () => {
+                try {
+                    const gQuery = jan ? `isbn:${jan}` : `${makerShort} ${code}`;
+                    const gbRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(gQuery)}&maxResults=3`);
+                    if (gbRes && gbRes.ok) {
+                        const gbData = await gbRes.json();
+                        if (gbData && Array.isArray(gbData.items) && gbData.items.length > 0) {
+                            const info = gbData.items[0].volumeInfo;
+                            if (info && info.title && (jan || (code && info.title.toUpperCase().includes(code.toUpperCase())))) {
+                                return {
+                                    name: info.title,
+                                    maker: maker || (info.publisher || ''),
+                                    code: code || '',
+                                    jan: jan || '',
+                                    price: 0
+                                };
+                            }
+                        }
+                    }
+                } catch (e) {}
+                return null;
+            })());
+
+            const results = await Promise.all(tasks);
+            const firstHit = results.find(r => r && r.name);
+            if (firstHit) {
+                return firstHit;
+            }
 
             return null;
         }
