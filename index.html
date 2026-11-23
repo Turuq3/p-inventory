@@ -480,12 +480,12 @@
                 <!-- メーカーと型番から商品名・価格を自動入力バー -->
                 <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="text-xs text-indigo-900">
-                        <span class="font-bold">メーカー・型番から自動補完</span>
-                        <p class="text-[11px] text-indigo-700">選択したメーカーと品番・型番から品名と価格を自動入力します。</p>
+                        <span class="font-bold">メーカー・型番から自動補完 (Web検索対応)</span>
+                        <p class="text-[11px] text-indigo-700">選択したメーカーと品番・JANから正式な品名・定価・規格を検索して自動入力します。</p>
                     </div>
                     <button type="button" id="btn-auto-lookup" onclick="autoFillFromMakerAndCode()" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition shrink-0">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                        <span>商品名・価格を自動入力</span>
+                        <span>商品名・定価を自動入力</span>
                     </button>
                 </div>
 
@@ -496,7 +496,7 @@
                         <input type="text" id="item-name" required placeholder="例: HG 1/144 ガンダムエアリアル / Mr.カラー ホワイト" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">価格 (円)</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">定価・価格 (円)</label>
                         <input type="number" id="item-price" min="0" placeholder="例: 1430" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                 </div>
@@ -551,12 +551,16 @@
                                     <span>画像選択</span>
                                     <input type="file" id="item-image-file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
                                 </label>
+                                <button type="button" id="item-image-rotate-btn" onclick="rotateCurrentItemImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition" title="90度回転して向きを微調整">
+                                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                                    <span>90°回転</span>
+                                </button>
                                 <button type="button" id="item-image-clear-btn" onclick="clearItemImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold rounded-lg transition">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                     <span>削除</span>
                                 </button>
                             </div>
-                            <p class="text-[11px] text-slate-500">スマホのカメラでパッケージやボトルを直接撮影、または端末内の画像を選択できます。</p>
+                            <p class="text-[11px] text-slate-500">カメラ撮影・画像選択時に画像の向きを自動補正します（手動の90°回転も可能）。</p>
                         </div>
                     </div>
                 </div>
@@ -1057,7 +1061,6 @@ function doGet(e) {
             }
         ];
 
-        // メーカー・型番クイック辞書（オフライン即応＋Web検索補完用）
         const KNOWN_PRODUCT_CATALOG = [
             { code: '5063043', maker: 'BANDAI SPIRITS', name: 'HG 1/144 ガンダムエアリアル', price: 1430, spec: '1/144', category: 'KIT' },
             { code: '5061542', maker: 'BANDAI SPIRITS', name: 'MG 1/100 サザビー Ver.Ka', price: 9900, spec: '1/100', category: 'KIT' },
@@ -1144,6 +1147,26 @@ function doGet(e) {
                 makersList = [...DEFAULT_MAKERS];
                 specsList = [...DEFAULT_SPECS];
                 outReasonsList = [...DEFAULT_OUT_REASONS];
+            }
+        }
+
+        function saveData(skipCloudSync = false) {
+            try {
+                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+                localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(historyLogs));
+                localStorage.setItem(STORAGE_KEY_MAKERS, JSON.stringify(makersList));
+                localStorage.setItem(STORAGE_KEY_SPECS, JSON.stringify(specsList));
+                localStorage.setItem(STORAGE_KEY_OUT_REASONS, JSON.stringify(outReasonsList));
+            } catch (e) {
+                showToast('ブラウザ保存容量の上限に近づいています。不要な画像を削除してください。', 'error');
+            }
+
+            if (!skipCloudSync) {
+                const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
+                const autoSync = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false';
+                if (gasUrl && autoSync) {
+                    syncToGoogleSheets(false);
+                }
             }
         }
 
@@ -1289,7 +1312,6 @@ function doGet(e) {
                 currentCategoryTab = tabName;
             }
 
-            // タブボタン見た目更新
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = 'tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition whitespace-nowrap';
             });
@@ -1305,7 +1327,6 @@ function doGet(e) {
                 activeBtn.className = `tab-btn flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white ${colorMap[tabName] || 'text-blue-700'} shadow-2xs transition whitespace-nowrap`;
             }
 
-            // ビュー表示切替
             const viewInv = document.getElementById('view-inventory');
             const viewOrder = document.getElementById('view-order');
             const viewHistory = document.getElementById('view-history');
@@ -1348,7 +1369,6 @@ function doGet(e) {
                 desc.textContent = 'ラッカー・水性・エナメル塗料やサーフェイサーの色見本・残数を管理します。';
             }
 
-            // CSV一括登録ボタンの表示制御（カテゴリ管理画面のみ有効表示）
             const csvImportBtn = document.getElementById('btn-csv-import');
             if (csvImportBtn) {
                 csvImportBtn.classList.toggle('hidden', currentTab !== 'KIT' && currentTab !== 'PART' && currentTab !== 'PAINT');
@@ -1460,39 +1480,42 @@ function doGet(e) {
                     : '-';
 
                 return `
-                    <tr class="hover:bg-slate-50/80 transition">
-                        <td class="px-4 py-3 whitespace-nowrap">${statusBadge}</td>
-                        <td class="px-4 py-3 text-center">${imgHtml}</td>
-                        <td class="px-4 py-3 whitespace-nowrap font-mono text-xs font-semibold text-slate-700">${escapeHtml(item.code)}</td>
-                        <td class="px-4 py-3">
-                            <div class="text-[11px] font-semibold text-slate-500">${escapeHtml(item.maker || 'メーカー未指定')}</div>
-                            <div class="font-bold text-slate-900 flex items-center gap-1.5 mt-0.5">
-                                ${colorChip}
+                    <tr class="hover:bg-slate-50/80 transition align-top">
+                        <td class="px-4 py-3.5 whitespace-nowrap">${statusBadge}</td>
+                        <td class="px-4 py-3.5 text-center">${imgHtml}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap">
+                            <div class="font-mono text-xs font-bold text-slate-800">${escapeHtml(item.code)}</div>
+                            <div class="text-[11px] text-slate-400 mt-1">更新: ${escapeHtml((item.updatedAt || '').split(' ')[0] || '-')}</div>
+                        </td>
+                        <td class="px-4 py-3.5 min-w-[240px] max-w-md space-y-1.5">
+                            <div class="text-xs font-semibold text-slate-500 leading-snug">${escapeHtml(item.maker || 'メーカー未指定')}</div>
+                            <div class="font-bold text-sm text-slate-900 flex items-start gap-1.5 leading-snug break-words whitespace-normal">
+                                ${colorChip ? `<span class="mt-1">${colorChip}</span>` : ''}
                                 <span>${escapeHtml(item.name)}</span>
                             </div>
-                            <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                                ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">${escapeHtml(item.spec)}</span>` : ''}
+                            <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                ${item.spec ? `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">${escapeHtml(item.spec)}</span>` : ''}
                                 ${item.acquisition ? `<span class="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">${escapeHtml(item.acquisition)}</span>` : ''}
                             </div>
-                            ${item.memo ? `<p class="text-xs text-slate-500 mt-1 line-clamp-1">${escapeHtml(item.memo)}</p>` : ''}
+                            ${item.memo ? `<p class="text-xs text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(item.memo)}</p>` : ''}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right font-mono text-xs font-semibold text-slate-700">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-mono text-xs font-semibold text-slate-700">
                             ${priceText}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-base ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold text-base ${stock < minStock ? 'text-rose-600' : 'text-slate-900'}">
                             ${stock} <span class="text-xs font-normal text-slate-500">${meta.unit}</span>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right text-slate-600 font-medium">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right text-slate-600 font-medium">
                             ${minStock} <span class="text-xs text-slate-400">${meta.unit}</span>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-center">
                             <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-2xs">
                                 <button onclick="quickAdjust('${item.id}', -1)" title="1つ出庫 (-1)" class="px-2.5 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-bold transition">-</button>
                                 <span class="w-px h-4 bg-slate-200"></span>
                                 <button onclick="quickAdjust('${item.id}', 1)" title="1つ入庫 (+1)" class="px-2.5 py-1 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-bold transition">+</button>
                             </div>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-center">
                             <div class="inline-flex items-center space-x-1">
                                 <button type="button" onclick="openItemModal('${item.id}')" title="編集" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
                                     <i data-lucide="edit-3" class="w-4 h-4 pointer-events-none"></i>
@@ -1565,23 +1588,24 @@ function doGet(e) {
                     : `<div class="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center mx-auto"><span class="text-[10px] font-bold text-slate-400">NoImage</span></div>`;
 
                 return `
-                    <tr class="hover:bg-rose-50/40 transition">
-                        <td class="px-4 py-3 text-center">${imgHtml}</td>
-                        <td class="px-4 py-3 whitespace-nowrap">
+                    <tr class="hover:bg-rose-50/40 transition align-top">
+                        <td class="px-4 py-3.5 text-center">${imgHtml}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border ${meta.badgeClass}">
                                 ${meta.label}
                             </span>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap font-mono text-xs font-semibold text-slate-700">${escapeHtml(item.code)}</td>
-                        <td class="px-4 py-3">
-                            <div class="text-[11px] font-semibold text-slate-500">${escapeHtml(item.maker || 'メーカー未指定')}</div>
-                            <div class="font-bold text-slate-900">${escapeHtml(item.name)}</div>
-                            ${item.spec ? `<span class="text-[11px] text-slate-500">${escapeHtml(item.spec)}</span>` : ''}
+                        <td class="px-4 py-3.5 whitespace-nowrap font-mono text-xs font-bold text-slate-800">${escapeHtml(item.code)}</td>
+                        <td class="px-4 py-3.5 min-w-[220px] max-w-md space-y-1">
+                            <div class="text-xs font-semibold text-slate-500">${escapeHtml(item.maker || 'メーカー未指定')}</div>
+                            <div class="font-bold text-sm text-slate-900 leading-snug break-words whitespace-normal">${escapeHtml(item.name)}</div>
+                            ${item.spec ? `<div><span class="inline-block text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">${escapeHtml(item.spec)}</span></div>` : ''}
+                            ${item.memo ? `<p class="text-xs text-slate-600 bg-white/80 px-2 py-1 rounded border border-rose-100 leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(item.memo)}</p>` : ''}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-rose-600">${stock} ${meta.unit}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right text-slate-600">${minStock} ${meta.unit}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-emerald-700">+${recommended} ${meta.unit}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold text-rose-600">${stock} ${meta.unit}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right text-slate-600">${minStock} ${meta.unit}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold text-emerald-700">+${recommended} ${meta.unit}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap text-center">
                             <div class="inline-flex items-center gap-1.5">
                                 <button type="button" onclick="openStockModal('ADJUST', '${item.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-2xs">
                                     購入反映
@@ -1632,43 +1656,152 @@ function doGet(e) {
                 const qtyClass = qtyNum > 0 ? 'text-emerald-600' : (qtyNum < 0 ? 'text-amber-700' : 'text-slate-600');
 
                 return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="px-4 py-3 whitespace-nowrap text-xs font-mono text-slate-500">${escapeHtml(log.timestamp)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap">${badge}</td>
-                        <td class="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-700">${escapeHtml(log.itemCode)}</td>
-                        <td class="px-4 py-3 font-medium text-slate-900">${escapeHtml(log.itemName)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right font-bold ${qtyClass}">${qtyText}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-slate-800">${log.afterStock}</td>
-                        <td class="px-4 py-3 text-xs text-slate-600">${escapeHtml(log.note || '-')}</td>
+                    <tr class="hover:bg-slate-50 transition align-top">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-xs font-mono text-slate-500">${escapeHtml(log.timestamp)}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap">${badge}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap font-mono text-xs text-slate-700">${escapeHtml(log.itemCode)}</td>
+                        <td class="px-4 py-3.5 font-medium text-slate-900 min-w-[180px] max-w-xs leading-snug break-words whitespace-normal">${escapeHtml(log.itemName)}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-bold ${qtyClass}">${qtyText}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap text-right font-semibold text-slate-800">${log.afterStock}</td>
+                        <td class="px-4 py-3.5 text-xs text-slate-600 min-w-[180px] max-w-sm leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(log.note || '-')}</td>
                     </tr>
                 `;
             }).join('');
         }
 
         // ==========================================
-        // データ永続化 & Googleスプレッドシート連携
+        // メーカー・型番・JANからの自動補完（Web検索グラウンディング対応）
         // ==========================================
-        function saveData(skipCloudSync = false) {
-            try {
-                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
-                localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(historyLogs));
-                localStorage.setItem(STORAGE_KEY_MAKERS, JSON.stringify(makersList));
-                localStorage.setItem(STORAGE_KEY_SPECS, JSON.stringify(specsList));
-                localStorage.setItem(STORAGE_KEY_OUT_REASONS, JSON.stringify(outReasonsList));
-            } catch (e) {
-                console.error('LocalStorage save error:', e);
-                showToast('ブラウザ保存容量の上限に近づいています。JSONバックアップをおすすめします', 'error');
+        async function autoFillFromMakerAndCode() {
+            const codeRaw = (document.getElementById('item-code').value || '').trim();
+            const codeUpper = codeRaw.toUpperCase();
+            const makerVal = (document.getElementById('item-maker').value || '').trim();
+            const categoryVal = document.getElementById('item-category').value;
+
+            if (!codeRaw) {
+                showToast('品番・型番またはJANコードを入力してください', 'info');
+                return;
             }
 
-            if (!skipCloudSync) {
-                const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
-                const autoSync = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false';
-                if (gasUrl && autoSync) {
-                    syncToGoogleSheets(false);
+            // 1. 既存マスタから同一品番を検索
+            const existing = items.find(i => (i.code || '').toUpperCase() === codeUpper);
+            if (existing) {
+                document.getElementById('item-name').value = existing.name;
+                if (existing.price) document.getElementById('item-price').value = existing.price;
+                if (existing.maker) populateSelectOptions(existing.maker, existing.spec || '');
+                showToast('登録済みマスタから商品名・定価を補完しました', 'success');
+                return;
+            }
+
+            // 2. ローカルカタログ辞書から検索
+            const foundLocal = KNOWN_PRODUCT_CATALOG.find(p =>
+                p.code.toUpperCase() === codeUpper &&
+                (!makerVal || makerVal.includes(p.maker) || p.maker.includes(makerVal))
+            ) || KNOWN_PRODUCT_CATALOG.find(p => p.code.toUpperCase() === codeUpper);
+
+            if (foundLocal) {
+                document.getElementById('item-name').value = foundLocal.name;
+                document.getElementById('item-price').value = foundLocal.price;
+                const matchedMaker = makersList.find(m => m.includes(foundLocal.maker)) || foundLocal.maker;
+                populateSelectOptions(matchedMaker, foundLocal.spec);
+                showToast(`「${foundLocal.name}」の情報を自動入力しました`, 'success');
+                return;
+            }
+
+            // 3. Gemini API + Google Search グラウンディングで実在製品情報を検索
+            const lookupBtn = document.getElementById('btn-auto-lookup');
+            const origBtnHtml = lookupBtn ? lookupBtn.innerHTML : '';
+            if (lookupBtn) {
+                lookupBtn.disabled = true;
+                lookupBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Web検索中...</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+
+            try {
+                const catLabel = getCategoryMeta(categoryVal).label;
+                const queryText = `日本の模型・プラモデル・ホビー製品データベースとして、以下の製品情報をGoogle検索して特定してください。
+メーカー: ${makerVal || '指定なし'}
+型番・品番・JANコード: ${codeRaw}
+カテゴリ候補: ${catLabel}
+
+以下のJSON形式のみで回答してください（説明文やマークダウン記号は不要です）:
+{"found": trueまたはfalse, "name": "正式な商品名", "maker": "メーカー名", "price": 税込定価の数値(円・不明時は0), "spec": "スケールや規格(例: 1/144, 1/100, ラッカー系 10ml 等)"}`;
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{ parts: [{ text: queryText }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: "あなたは日本のプラモデル・模型パーツ・模型塗料の製品カタログ検索アシスタントです。型番やJANコード、メーカー名から正確な商品名とメーカー希望小売価格（税込定価・数値のみ）を特定し、純粋なJSONオブジェクトのみを返してください。" }]
+                    }
+                };
+
+                let response = null;
+                const delays = [1000, 2000, 4000];
+                for (let attempt = 0; attempt <= delays.length; attempt++) {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok || attempt === delays.length) break;
+                    await new Promise(r => setTimeout(r, delays[attempt]));
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const result = await response.json();
+                const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('JSON parse failed');
+                }
+
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed && parsed.found && parsed.name) {
+                    document.getElementById('item-name').value = parsed.name;
+                    if (parsed.price && Number(parsed.price) > 0) {
+                        document.getElementById('item-price').value = Math.round(Number(parsed.price));
+                    }
+
+                    let resolvedMaker = makerVal;
+                    if (!resolvedMaker && parsed.maker) {
+                        resolvedMaker = makersList.find(m => m.includes(parsed.maker) || parsed.maker.includes(m.split(' ')[0])) || parsed.maker;
+                        if (resolvedMaker && !makersList.includes(resolvedMaker)) {
+                            makersList.push(resolvedMaker);
+                        }
+                    }
+
+                    let resolvedSpec = document.getElementById('item-spec').value || '';
+                    if (!resolvedSpec && parsed.spec) {
+                        resolvedSpec = specsList.find(s => parsed.spec.includes(s) || s.includes(parsed.spec)) || parsed.spec;
+                        if (resolvedSpec && !specsList.includes(resolvedSpec)) {
+                            specsList.push(resolvedSpec);
+                        }
+                    }
+
+                    populateSelectOptions(resolvedMaker, resolvedSpec);
+                    showToast(`Web検索から「${parsed.name}」の品名・定価を取得しました`, 'success');
+                } else {
+                    showToast('Web検索でも該当する製品情報が見つかりませんでした。手動で入力してください', 'info');
+                }
+            } catch (err) {
+                showToast('自動検索で製品を特定できませんでした。手動で入力してください', 'info');
+            } finally {
+                if (lookupBtn) {
+                    lookupBtn.disabled = false;
+                    lookupBtn.innerHTML = origBtnHtml;
+                    if (window.lucide) lucide.createIcons();
                 }
             }
         }
 
+        // ==========================================
+        // Googleスプレッドシート連携機能
+        // ==========================================
         function openDirectSpreadsheet() {
             const editUrl = localStorage.getItem(STORAGE_KEY_SHEETS_EDIT_URL);
             if (editUrl) {
@@ -1765,7 +1898,6 @@ function doGet(e) {
                 return;
             }
 
-            // セル容量制限対策のため画像Base64は除外してクラウド同期
             const itemsWithoutHeavyImages = items.map(it => ({
                 ...it,
                 image: ''
@@ -1811,7 +1943,6 @@ function doGet(e) {
                 const data = await res.json();
 
                 if (data && Array.isArray(data.items)) {
-                    // ローカル端末の画像データがあればID一致で引き継ぐ
                     const localImgMap = new Map(items.filter(i => i.image).map(i => [i.id, i.image]));
                     items = data.items.map(it => ({
                         ...it,
@@ -1936,52 +2067,169 @@ function doGet(e) {
         }
 
         // ==========================================
-        // 商品画像処理 & ライトボックス
+        // 商品画像処理（EXIF向き自動補正・手動回転） & ライトボックス
         // ==========================================
-        function handleImageUpload(event) {
+        function getExifOrientation(arrayBuffer) {
+            try {
+                const view = new DataView(arrayBuffer);
+                if (view.byteLength < 4 || view.getUint16(0, false) !== 0xFFD8) return 1;
+                let offset = 2;
+                const length = view.byteLength;
+                while (offset + 4 <= length) {
+                    const marker = view.getUint16(offset, false);
+                    offset += 2;
+                    if (marker === 0xFFE1) {
+                        if (offset + 8 > length || view.getUint32(offset + 2, false) !== 0x45786966) return 1;
+                        const little = view.getUint16(offset + 8, false) === 0x4949;
+                        const tiffOffset = offset + 8;
+                        const ifdOffset = view.getUint32(tiffOffset + 4, little);
+                        const dirStart = tiffOffset + ifdOffset;
+                        if (dirStart + 2 > length) return 1;
+                        const tags = view.getUint16(dirStart, little);
+                        for (let i = 0; i < tags; i++) {
+                            const entryOffset = dirStart + 2 + i * 12;
+                            if (entryOffset + 12 <= length && view.getUint16(entryOffset, little) === 0x0112) {
+                                return view.getUint16(entryOffset + 8, little);
+                            }
+                        }
+                    } else if ((marker & 0xFF00) !== 0xFF00) {
+                        break;
+                    } else {
+                        offset += view.getUint16(offset, false);
+                    }
+                }
+            } catch (e) {
+                return 1;
+            }
+            return 1;
+        }
+
+        async function handleImageUpload(event) {
             const file = event.target.files && event.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const img = new Image();
-                img.onload = function () {
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 640;
-                    let w = img.width;
-                    let h = img.height;
-                    if (w > maxDim || h > maxDim) {
-                        if (w > h) {
-                            h = Math.round((h * maxDim) / w);
-                            w = maxDim;
-                        } else {
-                            w = Math.round((w * maxDim) / h);
-                            h = maxDim;
+            try {
+                let orientation = 1;
+                try {
+                    const buffer = await file.arrayBuffer();
+                    orientation = getExifOrientation(buffer);
+                } catch (e) {
+                    orientation = 1;
+                }
+
+                if (typeof createImageBitmap === 'function') {
+                    try {
+                        const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+                        const maxDim = 640;
+                        let w = bitmap.width;
+                        let h = bitmap.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
                         }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(bitmap, 0, 0, w, h);
+                        if (typeof bitmap.close === 'function') bitmap.close();
+
+                        currentEditingImage = canvas.toDataURL('image/jpeg', 0.8);
+                        renderImagePreview(currentEditingImage);
+                        if (orientation > 1) {
+                            showToast('撮影画像の向きを自動調整しました', 'success');
+                        }
+                        return;
+                    } catch (bitmapErr) {
+                        // フォールバック処理へ
                     }
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    currentEditingImage = canvas.toDataURL('image/jpeg', 0.78);
-                    renderImagePreview(currentEditingImage);
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const maxDim = 640;
+                        let srcW = img.width;
+                        let srcH = img.height;
+                        if (srcW > maxDim || srcH > maxDim) {
+                            if (srcW > srcH) {
+                                srcH = Math.round((srcH * maxDim) / srcW);
+                                srcW = maxDim;
+                            } else {
+                                srcW = Math.round((srcW * maxDim) / srcH);
+                                srcH = maxDim;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const swapDimensions = orientation >= 5 && orientation <= 8;
+                        canvas.width = swapDimensions ? srcH : srcW;
+                        canvas.height = swapDimensions ? srcW : srcH;
+
+                        switch (orientation) {
+                            case 2: ctx.transform(-1, 0, 0, 1, srcW, 0); break;
+                            case 3: ctx.transform(-1, 0, 0, -1, srcW, srcH); break;
+                            case 4: ctx.transform(1, 0, 0, -1, 0, srcH); break;
+                            case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+                            case 6: ctx.transform(0, 1, -1, 0, srcH, 0); break;
+                            case 7: ctx.transform(0, -1, -1, 0, srcH, srcW); break;
+                            case 8: ctx.transform(0, -1, 1, 0, 0, srcW); break;
+                            default: break;
+                        }
+
+                        ctx.drawImage(img, 0, 0, srcW, srcH);
+                        currentEditingImage = canvas.toDataURL('image/jpeg', 0.8);
+                        renderImagePreview(currentEditingImage);
+                        if (orientation > 1) {
+                            showToast('撮影画像の向きを自動調整しました', 'success');
+                        }
+                    };
+                    img.src = e.target.result;
                 };
-                img.src = e.target.result;
+                reader.readAsDataURL(file);
+            } catch (err) {
+                showToast('画像の読み込み中にエラーが発生しました', 'error');
+            }
+        }
+
+        function rotateCurrentItemImage() {
+            if (!currentEditingImage) return;
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.height;
+                canvas.height = img.width;
+                const ctx = canvas.getContext('2d');
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(Math.PI / 2);
+                ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                currentEditingImage = canvas.toDataURL('image/jpeg', 0.82);
+                renderImagePreview(currentEditingImage);
             };
-            reader.readAsDataURL(file);
+            img.src = currentEditingImage;
         }
 
         function renderImagePreview(dataUrl) {
             const box = document.getElementById('item-image-preview-box');
             const clearBtn = document.getElementById('item-image-clear-btn');
+            const rotateBtn = document.getElementById('item-image-rotate-btn');
             if (!box) return;
 
             if (dataUrl) {
                 box.innerHTML = `<img src="${dataUrl}" alt="プレビュー" class="w-full h-full object-cover">`;
                 if (clearBtn) clearBtn.classList.remove('hidden');
+                if (rotateBtn) rotateBtn.classList.remove('hidden');
             } else {
                 box.innerHTML = `<span class="text-[11px] font-bold text-slate-400">NoImage</span>`;
                 if (clearBtn) clearBtn.classList.add('hidden');
+                if (rotateBtn) rotateBtn.classList.add('hidden');
             }
         }
 
@@ -2078,42 +2326,6 @@ function doGet(e) {
             const paintGroup = document.getElementById('paint-color-group');
             if (paintGroup) {
                 paintGroup.classList.toggle('hidden', cat !== 'PAINT');
-            }
-        }
-
-        function autoFillFromMakerAndCode() {
-            const codeVal = (document.getElementById('item-code').value || '').trim().toUpperCase();
-            const makerVal = (document.getElementById('item-maker').value || '').trim();
-
-            if (!codeVal) {
-                showToast('品番・型番を入力してから自動入力を押してください', 'info');
-                return;
-            }
-
-            // 1. 既存マスタから同一品番を検索
-            const existing = items.find(i => (i.code || '').toUpperCase() === codeVal);
-            if (existing) {
-                document.getElementById('item-name').value = existing.name;
-                if (existing.price) document.getElementById('item-price').value = existing.price;
-                if (existing.maker) populateSelectOptions(existing.maker, existing.spec || '');
-                showToast('登録済みマスタから商品名・価格を補完しました', 'success');
-                return;
-            }
-
-            // 2. カタログ辞書から検索
-            const found = KNOWN_PRODUCT_CATALOG.find(p =>
-                p.code.toUpperCase() === codeVal &&
-                (!makerVal || makerVal.includes(p.maker) || p.maker.includes(makerVal))
-            ) || KNOWN_PRODUCT_CATALOG.find(p => p.code.toUpperCase() === codeVal);
-
-            if (found) {
-                document.getElementById('item-name').value = found.name;
-                document.getElementById('item-price').value = found.price;
-                const matchedMaker = makersList.find(m => m.includes(found.maker)) || found.maker;
-                populateSelectOptions(matchedMaker, found.spec);
-                showToast(`「${found.name}」の情報を自動入力しました`, 'success');
-            } else {
-                showToast('該当する型番データが見つかりませんでした。手動で入力してください', 'info');
             }
         }
 
