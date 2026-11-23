@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P在庫管理システム - プラモデル・パーツ・塗料在庫管理</title>
+    <title>P在庫管理システム</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter & Noto Sans JP -->
@@ -503,6 +503,10 @@
                                     <span>画像選択</span>
                                     <input type="file" id="item-image-file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
                                 </label>
+                                <button type="button" id="item-image-ocr-btn" onclick="extractProductFromImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition" title="画像内の文字を読み取って品名などに登録">
+                                    <i data-lucide="scan-text" class="w-3.5 h-3.5"></i>
+                                    <span>画像から品名読取</span>
+                                </button>
                                 <button type="button" id="item-image-rotate-btn" onclick="rotateCurrentItemImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition" title="90度回転して向きを微調整">
                                     <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
                                     <span>90°回転</span>
@@ -512,7 +516,7 @@
                                     <span>削除</span>
                                 </button>
                             </div>
-                            <p class="text-[11px] text-slate-500">カメラ撮影・画像選択時に画像の向きを自動補正します（手動の90°回転も可能）。</p>
+                            <p class="text-[11px] text-slate-500">撮影・選択後に「画像から品名読取」を押すと、パッケージの文字を読み取り品名へ自動入力します。</p>
                         </div>
                     </div>
                 </div>
@@ -730,11 +734,30 @@
                             <button type="button" onclick="disconnectGoogleSheets()" class="text-xs text-rose-600 hover:underline">連携解除</button>
                         </div>
                         <label class="inline-flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" id="sheets-auto-load" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                            <span>起動（ログイン）時にスプレッドシートから最新データを自動読み込みする</span>
+                            <input type="checkbox" id="sheets-auto-load" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <span>起動（ログイン）時にスプレッドシートから最新データ・パスワード・設定を自動同期する</span>
                         </label>
                     </div>
                 </form>
+
+                <!-- 別端末引き継ぎ用リンク発行ボックス -->
+                <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/70 space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h4 class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+                                <i data-lucide="smartphone" class="w-4 h-4 text-blue-600"></i>
+                                <span>別端末へ設定・パスワードを一括引き継ぎ（URL共有）</span>
+                            </h4>
+                            <p class="text-[11px] text-blue-800 mt-0.5 leading-relaxed">
+                                発行されたURLを別のスマホやPCで開くと、<strong>スプレッドシート連携設定・変更後のパスワード・在庫データ・マイドライブ画像</strong>がすべて自動で反映されます。
+                            </p>
+                        </div>
+                        <button type="button" onclick="copyDeviceSyncLink()" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-2xs transition shrink-0">
+                            <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                            <span>引き継ぎURLをコピー</span>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- セットアップ手順 & GASコードコピー -->
                 <div class="border-t border-slate-200 pt-4 space-y-3">
@@ -752,21 +775,60 @@
                         <li>新規の <strong>Googleスプレッドシート</strong> を開き、上部メニュー「<strong>拡張機能</strong>」＞「<strong>Apps Script</strong>」をクリック。</li>
                         <li>エディタ内の既存コードをすべて消し、右上の「<strong>GASコードをコピー</strong>」ボタンの内容を貼り付けて保存。</li>
                         <li>右上の「<strong>デプロイ</strong>」＞「<strong>新しいデプロイ</strong>」＞種類の選択で「<strong>ウェブアプリ</strong>」を選択。</li>
-                        <li>アクセスできるユーザーを「<strong>全員</strong>」に設定してデプロイし、発行されたURLを上欄に貼り付けて保存。</li>
+                        <li>アクセスできるユーザーを「<strong>全員</strong>」に設定してデプロイし、発行されたURLを上欄に貼り付けて保存（マイドライブへの画像保存権限の承認も許可してください）。</li>
                     </ol>
-                    <textarea id="gas-script-template" readonly rows="6" class="w-full p-3 text-[11px] font-mono bg-slate-900 text-emerald-300 rounded-xl border border-slate-700 focus:outline-none">function doPost(e) {
+                    <textarea id="gas-script-template" readonly rows="8" class="w-full p-3 text-[11px] font-mono bg-slate-900 text-emerald-300 rounded-xl border border-slate-700 focus:outline-none">function saveImageToGoogleDrive(base64DataUrl, itemId, itemCode) {
+  if (!base64DataUrl || base64DataUrl.indexOf('data:image/') !== 0) {
+    return base64DataUrl || '';
+  }
+  try {
+    var folderName = 'P在庫管理システム_商品画像';
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
+
+    var parts = base64DataUrl.split(',');
+    var mimeMatch = parts[0].match(/:(.*?);/);
+    var mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    var bytes = Utilities.base64Decode(parts[1]);
+    var safeCode = (itemCode || itemId || 'item').replace(/[\\/:*?"<>|]/g, '_');
+    var fileName = safeCode + '_' + itemId + '.jpg';
+
+    var existingFiles = folder.getFilesByName(fileName);
+    while (existingFiles.hasNext()) {
+      existingFiles.next().setTrashed(true);
+    }
+
+    var blob = Utilities.newBlob(bytes, mimeType, fileName);
+    var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return 'https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w1000';
+  } catch (err) {
+    return '';
+  }
+}
+
+function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var payload = JSON.parse(e.postData.contents);
   
+  // 0. 新規撮影・選択されたBase64画像をGoogleマイドライブへ保存し共有URLへ変換
+  var processedItems = (payload.items || []).map(function(item) {
+    if (item.image && item.image.indexOf('data:image/') === 0) {
+      item.image = saveImageToGoogleDrive(item.image, item.id, item.code);
+    }
+    return item;
+  });
+  payload.items = processedItems;
+
   // 1. 在庫マスタシート更新
   var invSheet = ss.getSheetByName('在庫一覧') || ss.insertSheet('在庫一覧');
   invSheet.clear();
-  invSheet.appendRow(['ID', 'カテゴリ', '品番', 'メーカー', '品名', '規格・属性', '入手方法', '価格', '現在庫', '必要在庫', 'カラー', 'メモ', '更新日時']);
-  (payload.items || []).forEach(function(item) {
+  invSheet.appendRow(['ID', 'カテゴリ', '品番', 'メーカー', '品名', '規格・属性', '入手方法', '価格', '現在庫', '必要在庫', 'カラー', '画像URL', 'メモ', '更新日時']);
+  processedItems.forEach(function(item) {
     invSheet.appendRow([
       item.id, item.category, item.code, item.maker || '', item.name,
       item.spec || '', item.acquisition || '', item.price || 0, item.stock, item.minStock,
-      item.color || '', item.memo || '', item.updatedAt || ''
+      item.color || '', item.image || '', item.memo || '', item.updatedAt || ''
     ]);
   });
 
@@ -781,7 +843,7 @@
     ]);
   });
 
-  // 3. 完全復元用JSONバックアップシート
+  // 3. 完全復元用JSONバックアップシート（マイドライブ画像URLを含む）
   var rawSheet = ss.getSheetByName('システムデータJSON') || ss.insertSheet('システムデータJSON');
   rawSheet.clear();
   rawSheet.getRange(1, 1).setValue(JSON.stringify(payload));
@@ -1071,6 +1133,7 @@ function doGet(e) {
         // 初期化処理 & データ保存
         // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
+            applyDeviceSyncFromUrl();
             loadDataFromStorage();
             updateSheetsStatusUI();
             if (window.lucide) {
@@ -1079,6 +1142,91 @@ function doGet(e) {
             const pwInput = document.getElementById('login-password');
             if (pwInput) pwInput.focus();
         });
+
+        function applyDeviceSyncFromUrl() {
+            try {
+                const hash = window.location.hash || '';
+                const search = window.location.search || '';
+                let encodedParam = '';
+
+                if (hash.includes('sync=')) {
+                    const m = hash.match(/sync=([^&]+)/);
+                    if (m) encodedParam = decodeURIComponent(m[1]);
+                } else if (search.includes('sync=')) {
+                    const params = new URLSearchParams(search);
+                    encodedParam = params.get('sync') || '';
+                }
+
+                if (!encodedParam) return;
+
+                const jsonStr = decodeURIComponent(escape(atob(encodedParam)));
+                const cfg = JSON.parse(jsonStr);
+                if (!cfg || typeof cfg !== 'object') return;
+
+                if (cfg.gasUrl) {
+                    localStorage.setItem(STORAGE_KEY_SHEETS_URL, cfg.gasUrl);
+                }
+                if (cfg.editUrl) {
+                    localStorage.setItem(STORAGE_KEY_SHEETS_EDIT_URL, cfg.editUrl);
+                }
+                if (cfg.password) {
+                    localStorage.setItem(STORAGE_KEY_PASSWORD, cfg.password);
+                }
+                localStorage.setItem(STORAGE_KEY_SHEETS_AUTO, cfg.autoSync !== false ? 'true' : 'false');
+                localStorage.setItem(STORAGE_KEY_SHEETS_AUTO_LOAD, 'true');
+
+                // URLから機密パラメータを消去してクリーンなアドレスバーに戻す
+                if (window.history && window.history.replaceState) {
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState(null, '', cleanUrl);
+                }
+
+                setTimeout(() => {
+                    showToast('別端末からスプレッドシート連携設定とパスワードを引き継ぎました', 'success');
+                }, 300);
+            } catch (e) {
+                console.error('Device sync URL parse error:', e);
+            }
+        }
+
+        function copyDeviceSyncLink() {
+            const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL) || '';
+            const editUrl = localStorage.getItem(STORAGE_KEY_SHEETS_EDIT_URL) || '';
+            const password = getSystemPassword();
+            const autoSync = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false';
+
+            if (!gasUrl) {
+                showToast('先に「Google Apps Script ウェブアプリURL」を入力して保存してください', 'info');
+                return;
+            }
+
+            const payload = {
+                gasUrl,
+                editUrl,
+                password,
+                autoSync
+            };
+
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+                const baseUrl = window.location.origin + window.location.pathname;
+                const shareUrl = `${baseUrl}#sync=${encodeURIComponent(encoded)}`;
+
+                const tempInput = document.createElement('textarea');
+                tempInput.value = shareUrl;
+                tempInput.style.position = 'fixed';
+                tempInput.style.opacity = '0';
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                tempInput.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+
+                showToast('別端末引き継ぎ用URLをコピーしました！他の端末で開いてブックマークしてください', 'success');
+            } catch (e) {
+                showToast('引き継ぎURLの生成に失敗しました', 'error');
+            }
+        }
 
         function loadDataFromStorage() {
             try {
@@ -1145,7 +1293,7 @@ function doGet(e) {
                 showToast('ログインしました', 'success');
 
                 const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
-                const autoLoad = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) === 'true';
+                const autoLoad = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) !== 'false';
                 if (gasUrl && autoLoad) {
                     loadFromGoogleSheets(true);
                 }
@@ -1210,41 +1358,10 @@ function doGet(e) {
             localStorage.setItem(STORAGE_KEY_PASSWORD, nextPw);
             closePasswordModal();
             showToast('パスワードを変更しました', 'success');
-        }
 
-        // ==========================================
-        // 共通ヘルパー関数
-        // ==========================================
-        function getCategoryMeta(category) {
-            switch (category) {
-                case 'KIT':
-                    return {
-                        label: 'プラモデル',
-                        unit: '個',
-                        badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-                        icon: 'bot'
-                    };
-                case 'PART':
-                    return {
-                        label: 'パーツ・工具',
-                        unit: '点',
-                        badgeClass: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-                        icon: 'wrench'
-                    };
-                case 'PAINT':
-                    return {
-                        label: '塗料・溶剤',
-                        unit: '本',
-                        badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-                        icon: 'droplets'
-                    };
-                default:
-                    return {
-                        label: 'その他',
-                        unit: '個',
-                        badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-                        icon: 'package'
-                    };
+            const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
+            if (gasUrl) {
+                syncToGoogleSheets(false);
             }
         }
 
@@ -1795,7 +1912,7 @@ function doGet(e) {
             const gasUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL) || '';
             const editUrl = localStorage.getItem(STORAGE_KEY_SHEETS_EDIT_URL) || '';
             const autoSync = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false';
-            const autoLoad = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) === 'true';
+            const autoLoad = localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) !== 'false';
 
             document.getElementById('sheets-gas-url').value = gasUrl;
             document.getElementById('sheets-edit-url').value = editUrl;
@@ -1877,22 +1994,27 @@ function doGet(e) {
                 return;
             }
 
-            const itemsWithoutHeavyImages = items.map(it => ({
-                ...it,
-                image: ''
-            }));
+            const hasNewBase64Images = items.some(it => it.image && it.image.startsWith('data:image/'));
 
             const payload = {
-                items: itemsWithoutHeavyImages,
+                items: items,
                 logs: historyLogs.slice(0, 300),
                 makers: makersList,
                 specs: specsList,
                 outReasons: outReasonsList,
+                sharedConfig: {
+                    password: getSystemPassword(),
+                    editUrl: localStorage.getItem(STORAGE_KEY_SHEETS_EDIT_URL) || '',
+                    autoSync: localStorage.getItem(STORAGE_KEY_SHEETS_AUTO) !== 'false',
+                    autoLoad: localStorage.getItem(STORAGE_KEY_SHEETS_AUTO_LOAD) !== 'false'
+                },
                 exportedAt: getFormattedNow()
             };
 
             try {
-                if (manual) showToast('スプレッドシートへ保存中...', 'info');
+                if (manual || hasNewBase64Images) {
+                    showToast(hasNewBase64Images ? '画像をGoogleマイドライブへ保存・同期中...' : 'スプレッドシートへ保存中...', 'info');
+                }
                 await fetch(gasUrl, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1902,7 +2024,14 @@ function doGet(e) {
                 const nowStr = getFormattedNow();
                 localStorage.setItem(STORAGE_KEY_SHEETS_LAST, nowStr);
                 updateSheetsStatusUI();
-                if (manual) showToast('スプレッドシートへの送信が完了しました', 'success');
+                if (manual || hasNewBase64Images) {
+                    showToast(hasNewBase64Images ? '画像をマイドライブに保存し全端末へ同期しました' : 'スプレッドシートへの送信が完了しました', 'success');
+                }
+                if (hasNewBase64Images) {
+                    setTimeout(() => {
+                        loadFromGoogleSheets(true);
+                    }, 3500);
+                }
             } catch (err) {
                 console.error('Sheets sync error:', err);
                 if (manual) showToast('スプレッドシートへの通信に失敗しました', 'error');
@@ -1932,12 +2061,24 @@ function doGet(e) {
                     if (Array.isArray(data.specs) && data.specs.length > 0) specsList = data.specs;
                     if (Array.isArray(data.outReasons) && data.outReasons.length > 0) outReasonsList = data.outReasons;
 
+                    // クラウド側に保存されたパスワード・編集用URL・設定も自動同期
+                    if (data.sharedConfig && typeof data.sharedConfig === 'object') {
+                        if (data.sharedConfig.password) {
+                            localStorage.setItem(STORAGE_KEY_PASSWORD, data.sharedConfig.password);
+                        }
+                        if (data.sharedConfig.editUrl) {
+                            localStorage.setItem(STORAGE_KEY_SHEETS_EDIT_URL, data.sharedConfig.editUrl);
+                        }
+                    }
+
                     saveData(true);
                     refreshAllUI();
                     const nowStr = getFormattedNow();
                     localStorage.setItem(STORAGE_KEY_SHEETS_LAST, nowStr);
                     updateSheetsStatusUI();
-                    showToast(`スプレッドシートから ${items.length} 件のデータを読み込みました`, 'success');
+                    if (!silent) {
+                        showToast(`スプレッドシートから ${items.length} 件のデータと設定を読み込みました`, 'success');
+                    }
                 } else {
                     if (!silent) showToast('スプレッドシートにまだ保存データがありません', 'info');
                 }
@@ -2199,16 +2340,157 @@ function doGet(e) {
             const box = document.getElementById('item-image-preview-box');
             const clearBtn = document.getElementById('item-image-clear-btn');
             const rotateBtn = document.getElementById('item-image-rotate-btn');
+            const ocrBtn = document.getElementById('item-image-ocr-btn');
             if (!box) return;
 
             if (dataUrl) {
                 box.innerHTML = `<img src="${dataUrl}" alt="プレビュー" class="w-full h-full object-cover">`;
                 if (clearBtn) clearBtn.classList.remove('hidden');
                 if (rotateBtn) rotateBtn.classList.remove('hidden');
+                if (ocrBtn) ocrBtn.classList.remove('hidden');
             } else {
                 box.innerHTML = `<span class="text-[11px] font-bold text-slate-400">NoImage</span>`;
                 if (clearBtn) clearBtn.classList.add('hidden');
                 if (rotateBtn) rotateBtn.classList.add('hidden');
+                if (ocrBtn) ocrBtn.classList.add('hidden');
+            }
+        }
+
+        async function extractProductFromImage() {
+            if (!currentEditingImage) {
+                showToast('先に商品画像を撮影または選択してください', 'info');
+                return;
+            }
+
+            let base64Data = '';
+            let mimeType = 'image/jpeg';
+
+            try {
+                if (currentEditingImage.startsWith('data:')) {
+                    const parts = currentEditingImage.split(',');
+                    const mimeMatch = parts[0].match(/:(.*?);/);
+                    if (mimeMatch) mimeType = mimeMatch[1];
+                    base64Data = parts[1];
+                } else {
+                    const imgEl = document.querySelector('#item-image-preview-box img');
+                    if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = imgEl.naturalWidth;
+                        canvas.height = imgEl.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(imgEl, 0, 0);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                        base64Data = dataUrl.split(',')[1];
+                    }
+                }
+            } catch (e) {
+                showToast('画像データの取得に失敗しました。画像を再選択してお試しください', 'error');
+                return;
+            }
+
+            if (!base64Data) {
+                showToast('読み取り可能な画像データが見つかりませんでした', 'error');
+                return;
+            }
+
+            const ocrBtn = document.getElementById('item-image-ocr-btn');
+            const origHtml = ocrBtn ? ocrBtn.innerHTML : '';
+            if (ocrBtn) {
+                ocrBtn.disabled = true;
+                ocrBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>文字読取中...</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+
+            try {
+                const prompt = `この商品画像（プラモデルの外箱・パーツ・デカール・塗料ボトルなど）に印刷されている文字を読み取り、製品情報を抽出してください。
+以下のJSON形式のみで回答してください（説明文やマークダウン記号は不要です）:
+{"name": "読み取った正式な商品名", "code": "読み取れた品番・型番・JANコード（不明時は空文字）", "maker": "メーカー名（不明時は空文字）", "spec": "スケールや規格（例: 1/144, 1/100, ラッカー系 10ml 等・不明時は空文字）", "price": 読み取れた税込定価の数値(不明時は0)}`;
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: mimeType,
+                                        data: base64Data
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                let response = null;
+                const delays = [1000, 2000, 4000];
+                for (let attempt = 0; attempt <= delays.length; attempt++) {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok || attempt === delays.length) break;
+                    await new Promise(r => setTimeout(r, delays[attempt]));
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error('OCR API request failed');
+                }
+
+                const result = await response.json();
+                const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('OCR JSON parse failed');
+                }
+
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed && parsed.name) {
+                    document.getElementById('item-name').value = parsed.name;
+
+                    const codeInput = document.getElementById('item-code');
+                    if (codeInput && !codeInput.value.trim() && parsed.code) {
+                        codeInput.value = parsed.code;
+                    }
+
+                    const priceInput = document.getElementById('item-price');
+                    if (priceInput && (!priceInput.value || Number(priceInput.value) === 0) && parsed.price && Number(parsed.price) > 0) {
+                        priceInput.value = Math.round(Number(parsed.price));
+                    }
+
+                    let currentMaker = document.getElementById('item-maker').value || '';
+                    if (!currentMaker && parsed.maker) {
+                        currentMaker = makersList.find(m => m.includes(parsed.maker) || parsed.maker.includes(m.split(' ')[0])) || parsed.maker;
+                        if (currentMaker && !makersList.includes(currentMaker)) {
+                            makersList.push(currentMaker);
+                        }
+                    }
+
+                    let currentSpec = document.getElementById('item-spec').value || '';
+                    if (!currentSpec && parsed.spec) {
+                        currentSpec = specsList.find(s => parsed.spec.includes(s) || s.includes(parsed.spec)) || parsed.spec;
+                        if (currentSpec && !specsList.includes(currentSpec)) {
+                            specsList.push(currentSpec);
+                        }
+                    }
+
+                    populateSelectOptions(currentMaker, currentSpec);
+                    showToast(`画像から「${parsed.name}」を読み取り登録しました`, 'success');
+                } else {
+                    showToast('画像から商品名を読み取れませんでした。角度や明るさを変えてお試しください', 'info');
+                }
+            } catch (err) {
+                showToast('画像の文字読み取りに失敗しました', 'error');
+            } finally {
+                if (ocrBtn) {
+                    ocrBtn.disabled = false;
+                    ocrBtn.innerHTML = origHtml;
+                    if (window.lucide) lucide.createIcons();
+                }
             }
         }
 
