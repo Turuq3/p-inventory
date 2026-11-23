@@ -66,7 +66,7 @@
                     </svg>
                 </div>
                 <h1 class="text-xl font-bold tracking-tight">P在庫管理システム</h1>
-                <p class="text-xs text-slate-300 mt-1 font-mono">Ver. 3.5</p>
+                <p class="text-xs text-slate-300 mt-1 font-mono">Ver. 3.6</p>
             </div>
             <form onsubmit="handleLogin(event)" class="p-6 space-y-5">
                 <div>
@@ -109,7 +109,7 @@
                         </div>
                         <div class="min-w-0 flex flex-col">
                             <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white truncate">P在庫管理システム</h1>
-                            <p class="text-[11px] sm:text-xs text-slate-400 font-mono truncate">Ver. 3.5</p>
+                            <p class="text-[11px] sm:text-xs text-slate-400 font-mono truncate">Ver. 3.6</p>
                         </div>
                     </div>
                 </div>
@@ -376,7 +376,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="text-xs text-slate-500 flex items-center gap-2">
                     <span class="font-bold text-slate-700">P在庫管理システム</span>
-                    <span class="font-mono text-slate-400">Ver. 3.5</span>
+                    <span class="font-mono text-slate-400">Ver. 3.6</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="confirmDeleteAllData()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 hover:border-rose-600 text-xs font-semibold rounded-lg transition shadow-2xs">
@@ -826,7 +826,7 @@
     var blob = Utilities.newBlob(bytes, mimeType, fileName);
     var file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return 'https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w1000';
+    return 'https://lh3.googleusercontent.com/d/' + file.getId() + '=s1000';
   } catch (err) {
     return '';
   }
@@ -1826,10 +1826,17 @@ function doGet(e) {
 
                 if (data && Array.isArray(data.items)) {
                     const localImgMap = new Map(items.filter(i => i.image).map(i => [i.id, i.image]));
-                    items = data.items.map(it => ({
-                        ...it,
-                        image: it.image || localImgMap.get(it.id) || ''
-                    }));
+                    items = data.items.map(it => {
+                        const localImg = localImgMap.get(it.id) || '';
+                        // まだマイドライブへアップロード完了前のローカルBase64画像がある場合はローカル側を優先保持
+                        const resolvedImg = (localImg.startsWith('data:image/') && (!it.image || it.image.startsWith('data:image/')))
+                            ? localImg
+                            : (it.image || localImg);
+                        return {
+                            ...it,
+                            image: normalizeDisplayImageUrl(resolvedImg)
+                        };
+                    });
                     if (Array.isArray(data.logs)) historyLogs = data.logs;
                     if (Array.isArray(data.makers) && data.makers.length > 0) makersList = data.makers;
                     if (Array.isArray(data.specs) && data.specs.length > 0) specsList = data.specs;
@@ -2216,6 +2223,40 @@ function doGet(e) {
             }
         }
 
+        function normalizeDisplayImageUrl(url) {
+            if (!url || typeof url !== 'string') return '';
+            if (url.startsWith('data:image/')) return url;
+            // Googleドライブの各種URL形式からファイルIDを抽出し、全端末・未ログインでも表示可能なCDN URLへ正規化
+            const idMatch = url.match(/(?:[?&]id=|\/d\/|\/file\/d\/)([a-zA-Z0-9_-]{15,})/);
+            if (idMatch && idMatch[1]) {
+                return `https://lh3.googleusercontent.com/d/${idMatch[1]}=s1000`;
+            }
+            return url;
+        }
+
+        function handleImageLoadFallback(imgEl) {
+            if (!imgEl || !imgEl.src) return;
+            const stage = Number(imgEl.dataset.fallbackStage || '0');
+            const idMatch = imgEl.src.match(/(?:[?&]id=|\/d\/|\/file\/d\/)([a-zA-Z0-9_-]{15,})/);
+            if (idMatch && idMatch[1]) {
+                const fileId = idMatch[1];
+                if (stage === 0) {
+                    imgEl.dataset.fallbackStage = '1';
+                    imgEl.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                    return;
+                } else if (stage === 1) {
+                    imgEl.dataset.fallbackStage = '2';
+                    imgEl.src = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                    return;
+                }
+            }
+            // すべて失敗した場合はNoImage表示に切り替え
+            const fallbackBox = document.createElement('div');
+            fallbackBox.className = 'w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0';
+            fallbackBox.innerHTML = '<span class="text-[11px] font-bold text-slate-400">NoImage</span>';
+            imgEl.replaceWith(fallbackBox);
+        }
+
         function renderInventoryTable() {
             const listEl = document.getElementById('inventory-list');
             const emptyEl = document.getElementById('inventory-empty');
@@ -2277,9 +2318,9 @@ function doGet(e) {
                 } else {
                     statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0">適正</span>`;
                 }
-
-                const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" referrerpolicy="no-referrer" onclick="openImageLightbox('${item.id}')" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-85 transition shadow-2xs">`
+                const displayImgSrc = normalizeDisplayImageUrl(item.image);
+                const imgHtml = displayImgSrc
+                    ? `<img src="${escapeHtml(displayImgSrc)}" alt="${escapeHtml(item.name)}" referrerpolicy="no-referrer" onerror="handleImageLoadFallback(this)" onclick="openImageLightbox('${item.id}')" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-85 transition shadow-2xs">`
                     : `<div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[11px] font-bold text-slate-400">NoImage</span></div>`;
 
                 const colorChip = (item.category === 'PAINT' && item.color)
@@ -2395,8 +2436,9 @@ function doGet(e) {
                 const minStock = Number(item.minStock);
                 const recommended = Math.max(1, minStock - stock);
 
-                const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}" referrerpolicy="no-referrer" onclick="openImageLightbox('${item.id}')" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in shadow-2xs">`
+                const displayImgSrc = normalizeDisplayImageUrl(item.image);
+                const imgHtml = displayImgSrc
+                    ? `<img src="${escapeHtml(displayImgSrc)}" alt="${escapeHtml(item.name)}" referrerpolicy="no-referrer" onerror="handleImageLoadFallback(this)" onclick="openImageLightbox('${item.id}')" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-slate-200 shrink-0 cursor-zoom-in shadow-2xs">`
                     : `<div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0"><span class="text-[11px] font-bold text-slate-400">NoImage</span></div>`;
 
                 return `
@@ -2946,7 +2988,10 @@ function doGet(e) {
             const item = items.find(i => i.id === itemId);
             if (!item || !item.image) return;
             document.getElementById('lightbox-title').textContent = `${item.code} - ${item.name}`;
-            document.getElementById('lightbox-img').src = item.image;
+            const lbImg = document.getElementById('lightbox-img');
+            lbImg.dataset.fallbackStage = '0';
+            lbImg.onerror = function () { handleImageLoadFallback(this); };
+            lbImg.src = normalizeDisplayImageUrl(item.image);
             document.getElementById('image-lightbox-modal').classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
         }
