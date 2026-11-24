@@ -66,7 +66,7 @@
                     </svg>
                 </div>
                 <h1 class="text-xl font-bold tracking-tight">P在庫管理システム</h1>
-                <p class="text-xs text-slate-300 mt-1 font-mono">Ver. 3.72</p>
+                <p class="text-xs text-slate-300 mt-1 font-mono">Ver. 3.80</p>
             </div>
             <form onsubmit="handleLogin(event)" class="p-6 space-y-5">
                 <div>
@@ -109,7 +109,7 @@
                         </div>
                         <div class="min-w-0 flex flex-col">
                             <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white truncate">P在庫管理システム</h1>
-                            <p class="text-[11px] sm:text-xs text-slate-400 font-mono truncate">Ver. 3.72</p>
+                            <p class="text-[11px] sm:text-xs text-slate-400 font-mono truncate">Ver. 3.80</p>
                         </div>
                     </div>
                 </div>
@@ -277,6 +277,20 @@
                     </div>
                 </div>
 
+                <!-- プラモデル管理専用: ジャンル別絞り込みボタンバー -->
+                <div id="kit-genre-filter-bar" class="bg-white rounded-xl p-3 border border-slate-200 shadow-2xs space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <i data-lucide="tags" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <span>ジャンル別表示</span>
+                        </span>
+                        <span id="kit-genre-count-label" class="text-[11px] text-slate-400"></span>
+                    </div>
+                    <div id="kit-genre-buttons" class="flex flex-wrap gap-1.5">
+                        <!-- JSでジャンルボタン生成 -->
+                    </div>
+                </div>
+
                 <!-- 検索・フィルタバー -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
                     <div class="lg:col-span-6 flex gap-2">
@@ -380,7 +394,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="text-xs text-slate-500 flex items-center gap-2">
                     <span class="font-bold text-slate-700">P在庫管理システム</span>
-                    <span class="font-mono text-slate-400">Ver. 3.72</span>
+                    <span class="font-mono text-slate-400">Ver. 3.80</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="confirmDeleteAllData()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 hover:border-rose-600 text-xs font-semibold rounded-lg transition shadow-2xs">
@@ -416,6 +430,26 @@
                     </select>
                 </div>
 
+                <!-- ジャンル（選択式＆新規追加可能） -->
+                <div id="item-genre-group">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">ジャンル</label>
+                    <div class="flex gap-2">
+                        <select id="item-genre" class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <!-- JSで選択肢生成 -->
+                        </select>
+                        <button type="button" onclick="toggleAddOptionRow('genre')" class="px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition shrink-0 flex items-center gap-1">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>追加</span>
+                        </button>
+                    </div>
+                    <div id="add-genre-row" class="hidden mt-2 flex gap-2">
+                        <input type="text" id="new-genre-input" placeholder="新しいジャンル名を入力 (例: キャラクター, 城・建築)" class="flex-1 px-3 py-1.5 text-xs border border-blue-300 rounded-lg bg-blue-50/40 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <button type="button" onclick="addCustomGenre()" class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition">登録</button>
+                        <button type="button" onclick="toggleAddOptionRow('genre', false)" class="px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">閉じる</button>
+                    </div>
+                </div>
+
+                <!-- 品番 / 型番 と JANコード（別枠） -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">品番 / 型番 <span class="text-rose-500">*</span></label>
@@ -424,8 +458,8 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">JANコード</label>
                         <div class="flex gap-1.5">
-                            <input type="text" id="item-jan" inputmode="numeric" onchange="if(this.value.trim().length >= 8) autoFillFromJanOrMakerCode(true)" placeholder="例: 4573102630438" class="flex-1 min-w-0 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button type="button" onclick="openBarcodeScanner('ITEM_JAN')" title="スマホカメラでバーコード(JAN)をスキャン" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition shrink-0 flex items-center gap-1 shadow-2xs">
+                            <input type="text" id="item-jan" inputmode="numeric" placeholder="例: 4573102630438" class="flex-1 min-w-0 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <button type="button" onclick="openBarcodeScanner('ITEM_JAN')" title="カメラでJANコードをスキャンして自動登録" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition shrink-0 flex items-center gap-1 shadow-2xs">
                                 <i data-lucide="scan-barcode" class="w-4 h-4 text-emerald-400"></i>
                                 <span>スキャン</span>
                             </button>
@@ -433,7 +467,7 @@
                     </div>
                 </div>
 
-                <!-- メーカー（選択式＆新規追加可能・品名の上に配置） -->
+                <!-- メーカー（選択式＆新規追加可能） -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">メーカー</label>
                     <div class="flex gap-2">
@@ -452,22 +486,22 @@
                     </div>
                 </div>
 
-                <!-- メーカーと型番から商品名・価格を自動入力バー -->
+                <!-- JAN優先 / メーカー・品番 Web探索 自動入力バー -->
                 <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="text-xs text-indigo-900">
-                        <span class="font-bold">JAN読取 ＆ メーカー・型番 Web自動探索</span>
-                        <p class="text-[11px] text-indigo-700">①JANコードからメーカー・型番・品名を自動登録し、未取得時は②メーカーと品番から品名・価格をWeb探索します。</p>
+                        <span class="font-bold">JAN優先・メーカー＆品番 Web探索自動登録</span>
+                        <p class="text-[11px] text-indigo-700">JANコードから自動登録し、未特定時はメーカーと品番から品名・定価をWeb探索します。</p>
                     </div>
                     <button type="button" id="btn-auto-lookup" onclick="autoFillFromJanOrMakerCode(false)" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition shrink-0">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                        <span>JAN / メーカー・品番で自動登録</span>
+                        <span>自動検索・入力</span>
                     </button>
                 </div>
 
-                <!-- シリーズNo.（品名の上に配置・デフォルトは - ） -->
+                <!-- シリーズNo.（品名のすぐ上・デフォルト "-"） -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">シリーズNo.</label>
-                    <input type="text" id="item-series-no" value="-" placeholder="例: No.03 / HGUC 234 / -" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="item-series-no" value="-" placeholder="例: HG 03 / MG Ver.Ka（デフォルト: -）" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
 
                 <!-- 品名 & 価格 -->
@@ -513,7 +547,7 @@
                     </select>
                 </div>
 
-                <!-- 商品画像登録（ファイル選択 & スマホカメラ撮影対応） -->
+                <!-- 商品画像登録（カメラ撮影 & 画像選択 & OCR商品名取得） -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">商品画像（未登録時は NoImage 表示）</label>
                     <div class="flex items-center gap-4 p-3 border border-slate-200 rounded-xl bg-slate-50">
@@ -532,11 +566,11 @@
                                     <span>画像選択</span>
                                     <input type="file" id="item-image-file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
                                 </label>
-                                <button type="button" id="item-image-ocr-btn" onclick="extractProductFromImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition" title="画像からOCRで文字を読み取り商品名に登録">
+                                <button type="button" id="item-image-ocr-btn" onclick="extractProductFromImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-2xs transition">
                                     <i data-lucide="scan-text" class="w-3.5 h-3.5"></i>
                                     <span>OCR商品名読取</span>
                                 </button>
-                                <button type="button" id="item-image-rotate-btn" onclick="rotateCurrentItemImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition" title="90度回転して向きを微調整">
+                                <button type="button" id="item-image-rotate-btn" onclick="rotateCurrentItemImage()" class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold rounded-lg transition">
                                     <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
                                     <span>90°回転</span>
                                 </button>
@@ -545,7 +579,7 @@
                                     <span>削除</span>
                                 </button>
                             </div>
-                            <p class="text-[11px] text-slate-500">撮影・選択後に「画像から品名読取」を押すと、パッケージの文字を読み取り品名へ自動入力します。</p>
+                            <p class="text-[11px] text-slate-500">画像を撮影・選択すると「OCR商品名読取」で箱やラベルの文字から商品名を自動取得できます。</p>
                         </div>
                     </div>
                 </div>
@@ -1077,6 +1111,7 @@ function doGet(e) {
         // ==========================================
         const STORAGE_KEY_ITEMS = 'p_inv_items_v3';
         const STORAGE_KEY_LOGS = 'p_inv_logs_v3';
+        const STORAGE_KEY_GENRES = 'p_inv_genres_v1';
         const STORAGE_KEY_MAKERS = 'p_inv_makers_v3';
         const STORAGE_KEY_SPECS = 'p_inv_specs_v3';
         const STORAGE_KEY_OUT_REASONS = 'p_inv_out_reasons_v1';
@@ -1088,6 +1123,18 @@ function doGet(e) {
         const STORAGE_KEY_SHEETS_LAST = 'p_inv_sheets_last_v1';
 
         const DEFAULT_PASSWORD = 'plamo1234';
+
+        const DEFAULT_GENRES = [
+            'ガンダム',
+            'アニメ',
+            '特撮',
+            '車',
+            'バイク',
+            '船',
+            '飛行機',
+            'ミリタリー',
+            'その他'
+        ];
 
         const DEFAULT_MAKERS = [
             'BANDAI SPIRITS (バンダイ)',
@@ -1133,6 +1180,7 @@ function doGet(e) {
             {
                 id: 'item-1',
                 category: 'KIT',
+                genre: 'ガンダム',
                 code: '5063043',
                 jan: '4573102630438',
                 seriesNo: 'HG 03',
@@ -1151,6 +1199,7 @@ function doGet(e) {
             {
                 id: 'item-2',
                 category: 'KIT',
+                genre: 'ガンダム',
                 code: '5061542',
                 jan: '4573102615428',
                 seriesNo: 'MG Ver.Ka',
@@ -1169,6 +1218,7 @@ function doGet(e) {
             {
                 id: 'item-3',
                 category: 'PART',
+                genre: 'ガンダム',
                 code: 'GD-112',
                 jan: '4549660222965',
                 seriesNo: 'No.112',
@@ -1187,6 +1237,7 @@ function doGet(e) {
             {
                 id: 'item-4',
                 category: 'PAINT',
+                genre: 'その他',
                 code: 'C-1',
                 jan: '4973028535013',
                 seriesNo: 'C1',
@@ -1205,6 +1256,7 @@ function doGet(e) {
             {
                 id: 'item-5',
                 category: 'PAINT',
+                genre: 'その他',
                 code: 'GS-03',
                 jan: '4582182308031',
                 seriesNo: 'GS-03',
@@ -1760,6 +1812,7 @@ function doGet(e) {
             const payload = {
                 items: items,
                 logs: historyLogs.slice(0, 300),
+                genres: genresList,
                 makers: makersList,
                 specs: specsList,
                 outReasons: outReasonsList,
@@ -1832,6 +1885,7 @@ function doGet(e) {
                         };
                     });
                     if (Array.isArray(data.logs)) historyLogs = data.logs;
+                    if (Array.isArray(data.genres) && data.genres.length > 0) genresList = data.genres;
                     if (Array.isArray(data.makers) && data.makers.length > 0) makersList = data.makers;
                     if (Array.isArray(data.specs) && data.specs.length > 0) specsList = data.specs;
                     if (Array.isArray(data.outReasons) && data.outReasons.length > 0) outReasonsList = data.outReasons;
@@ -1913,11 +1967,13 @@ function doGet(e) {
         // ==========================================
         let items = [];
         let historyLogs = [];
+        let genresList = [];
         let makersList = [];
         let specsList = [];
         let outReasonsList = [];
         let currentTab = 'KIT';
         let currentCategoryTab = 'KIT';
+        let currentKitGenreFilter = 'ALL';
         let currentEditingImage = '';
         let confirmCallback = null;
         let html5QrScannerInstance = null;
@@ -1974,18 +2030,21 @@ function doGet(e) {
             try {
                 const rawItems = localStorage.getItem(STORAGE_KEY_ITEMS);
                 const rawLogs = localStorage.getItem(STORAGE_KEY_LOGS);
+                const rawGenres = localStorage.getItem(STORAGE_KEY_GENRES);
                 const rawMakers = localStorage.getItem(STORAGE_KEY_MAKERS);
                 const rawSpecs = localStorage.getItem(STORAGE_KEY_SPECS);
                 const rawOutReasons = localStorage.getItem(STORAGE_KEY_OUT_REASONS);
 
                 items = rawItems ? JSON.parse(rawItems) : JSON.parse(JSON.stringify(INITIAL_ITEMS));
                 historyLogs = rawLogs ? JSON.parse(rawLogs) : JSON.parse(JSON.stringify(INITIAL_LOGS));
+                genresList = rawGenres ? JSON.parse(rawGenres) : [...DEFAULT_GENRES];
                 makersList = rawMakers ? JSON.parse(rawMakers) : [...DEFAULT_MAKERS];
                 specsList = rawSpecs ? JSON.parse(rawSpecs) : [...DEFAULT_SPECS];
                 outReasonsList = rawOutReasons ? JSON.parse(rawOutReasons) : [...DEFAULT_OUT_REASONS];
             } catch (e) {
                 items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
                 historyLogs = JSON.parse(JSON.stringify(INITIAL_LOGS));
+                genresList = [...DEFAULT_GENRES];
                 makersList = [...DEFAULT_MAKERS];
                 specsList = [...DEFAULT_SPECS];
                 outReasonsList = [...DEFAULT_OUT_REASONS];
@@ -1996,6 +2055,7 @@ function doGet(e) {
             try {
                 localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
                 localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(historyLogs));
+                localStorage.setItem(STORAGE_KEY_GENRES, JSON.stringify(genresList));
                 localStorage.setItem(STORAGE_KEY_MAKERS, JSON.stringify(makersList));
                 localStorage.setItem(STORAGE_KEY_SPECS, JSON.stringify(specsList));
                 localStorage.setItem(STORAGE_KEY_OUT_REASONS, JSON.stringify(outReasonsList));
@@ -2186,11 +2246,77 @@ function doGet(e) {
             if (csvImportBtn) {
                 csvImportBtn.classList.toggle('hidden', currentTab !== 'KIT' && currentTab !== 'PART' && currentTab !== 'PAINT');
             }
+            const genreBar = document.getElementById('kit-genre-filter-bar');
+            if (genreBar) {
+                genreBar.classList.toggle('hidden', cat !== 'KIT');
+            }
             if (window.lucide) lucide.createIcons();
+        }
+
+        function setKitGenreFilter(genre) {
+            currentKitGenreFilter = genre;
+            renderInventoryTable();
+        }
+
+        function renderKitGenreButtons() {
+            const container = document.getElementById('kit-genre-buttons');
+            const countLabel = document.getElementById('kit-genre-count-label');
+            const bar = document.getElementById('kit-genre-filter-bar');
+            if (!container || !bar) return;
+
+            if (currentCategoryTab !== 'KIT') {
+                bar.classList.add('hidden');
+                return;
+            }
+            bar.classList.remove('hidden');
+
+            const kitItems = items.filter(i => i.category === 'KIT');
+            const allGenres = [...genresList];
+            kitItems.forEach(it => {
+                if (it.genre && !allGenres.includes(it.genre)) {
+                    allGenres.push(it.genre);
+                }
+            });
+
+            if (currentKitGenreFilter !== 'ALL' && !allGenres.includes(currentKitGenreFilter)) {
+                currentKitGenreFilter = 'ALL';
+            }
+
+            const buttonsData = [
+                { key: 'ALL', label: 'すべて', count: kitItems.length },
+                ...allGenres.map(g => ({
+                    key: g,
+                    label: g,
+                    count: kitItems.filter(it => (it.genre || 'その他') === g).length
+                }))
+            ];
+
+            if (countLabel) {
+                countLabel.textContent = currentKitGenreFilter === 'ALL'
+                    ? `全 ${kitItems.length} 件表示`
+                    : `「${currentKitGenreFilter}」表示中`;
+            }
+
+            container.innerHTML = buttonsData.map(btn => {
+                const isActive = currentKitGenreFilter === btn.key;
+                const activeClass = isActive
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                    : 'bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border-slate-200';
+                const badgeClass = isActive
+                    ? 'bg-indigo-500 text-white'
+                    : 'bg-slate-200/80 text-slate-600';
+                return `
+                    <button type="button" onclick="setKitGenreFilter('${escapeHtml(btn.key)}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${activeClass}">
+                        <span>${escapeHtml(btn.label)}</span>
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold ${badgeClass}">${btn.count}</span>
+                    </button>
+                `;
+            }).join('');
         }
 
         function refreshAllUI() {
             updateKPIs();
+            renderKitGenreButtons();
             renderInventoryTable();
             renderOrderList();
             renderHistory();
@@ -2282,16 +2408,23 @@ function doGet(e) {
             const emptyEl = document.getElementById('inventory-empty');
             if (!listEl) return;
 
+            renderKitGenreButtons();
+
             const search = (document.getElementById('filter-search')?.value || '').toLowerCase().trim();
             const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
             const sortType = document.getElementById('filter-sort')?.value || 'UPDATED_DESC';
 
             let filtered = items.filter(item => item.category === currentCategoryTab);
 
+            if (currentCategoryTab === 'KIT' && currentKitGenreFilter !== 'ALL') {
+                filtered = filtered.filter(item => (item.genre || 'その他') === currentKitGenreFilter);
+            }
+
             if (search) {
                 filtered = filtered.filter(item =>
                     (item.code || '').toLowerCase().includes(search) ||
                     (item.jan || '').toLowerCase().includes(search) ||
+                    (item.genre || '').toLowerCase().includes(search) ||
                     (item.seriesNo || '').toLowerCase().includes(search) ||
                     (item.name || '').toLowerCase().includes(search) ||
                     (item.maker || '').toLowerCase().includes(search) ||
@@ -2357,6 +2490,7 @@ function doGet(e) {
                         <div class="flex-1 min-w-0 space-y-1.5">
                             <div class="flex flex-wrap items-center gap-1.5 text-xs">
                                 ${statusBadge}
+                                ${item.genre ? `<span class="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">${escapeHtml(item.genre)}</span>` : ''}
                                 <span class="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(item.code)}</span>
                                 ${item.jan ? `<span class="font-mono text-[11px] text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">JAN: ${escapeHtml(item.jan)}</span>` : ''}
                                 ${item.seriesNo && item.seriesNo !== '-' ? `<span class="text-[11px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 font-medium">シリーズ: ${escapeHtml(item.seriesNo)}</span>` : ''}
@@ -2553,6 +2687,28 @@ function doGet(e) {
         // ==========================================
         // 選択肢生成 & カスタム項目追加
         // ==========================================
+        function populateGenreOptions(selectedGenre = 'ガンダム') {
+            const genreSelect = document.getElementById('item-genre');
+            if (!genreSelect) return;
+            const list = [...genresList];
+            if (selectedGenre && !list.includes(selectedGenre)) list.unshift(selectedGenre);
+            genreSelect.innerHTML = list.map(g => `<option value="${escapeHtml(g)}" ${g === selectedGenre ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('');
+        }
+
+        function addCustomGenre() {
+            const input = document.getElementById('new-genre-input');
+            const val = (input?.value || '').trim();
+            if (!val) return;
+            if (!genresList.includes(val)) {
+                genresList.push(val);
+                saveData();
+            }
+            populateGenreOptions(val);
+            toggleAddOptionRow('genre', false);
+            renderKitGenreButtons();
+            showToast(`ジャンル「${val}」を追加しました`, 'success');
+        }
+
         function populateSelectOptions(selectedMaker = '', selectedSpec = '') {
             const makerSelect = document.getElementById('item-maker');
             if (makerSelect) {
@@ -3028,6 +3184,7 @@ function doGet(e) {
             const titleEl = document.getElementById('item-modal-title');
             const headerEl = document.getElementById('item-modal-header');
 
+            toggleAddOptionRow('genre', false);
             toggleAddOptionRow('maker', false);
             toggleAddOptionRow('spec', false);
             document.getElementById('item-wishlist-mode').value = isWishlistMode ? 'true' : 'false';
@@ -3040,6 +3197,7 @@ function doGet(e) {
                 titleEl.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-blue-400"></i><span>アイテム情報の編集</span>`;
                 document.getElementById('item-id').value = item.id;
                 document.getElementById('item-category').value = item.category;
+                populateGenreOptions(item.genre || (item.category === 'KIT' ? 'ガンダム' : 'その他'));
                 document.getElementById('item-code').value = item.code || '';
                 document.getElementById('item-jan').value = item.jan || '';
                 document.getElementById('item-series-no').value = item.seriesNo || '-';
@@ -3055,8 +3213,12 @@ function doGet(e) {
                 renderImagePreview(currentEditingImage);
             } else {
                 const targetCat = defaultCategory || currentCategoryTab || 'KIT';
+                const defaultGenre = targetCat === 'KIT'
+                    ? (currentKitGenreFilter !== 'ALL' ? currentKitGenreFilter : 'ガンダム')
+                    : 'その他';
                 document.getElementById('item-id').value = '';
                 document.getElementById('item-category').value = targetCat;
+                populateGenreOptions(defaultGenre);
                 document.getElementById('item-code').value = '';
                 document.getElementById('item-jan').value = '';
                 document.getElementById('item-series-no').value = '-';
@@ -3103,6 +3265,7 @@ function doGet(e) {
             const id = document.getElementById('item-id').value;
             const isWishlist = document.getElementById('item-wishlist-mode').value === 'true';
             const category = document.getElementById('item-category').value;
+            const genre = (document.getElementById('item-genre')?.value || '').trim() || 'その他';
             const code = document.getElementById('item-code').value.trim();
             const jan = (document.getElementById('item-jan')?.value || '').trim();
             const seriesNo = (document.getElementById('item-series-no')?.value || '').trim() || '-';
@@ -3125,6 +3288,7 @@ function doGet(e) {
                     items[idx] = {
                         ...items[idx],
                         category,
+                        genre,
                         code,
                         jan,
                         seriesNo,
@@ -3160,6 +3324,7 @@ function doGet(e) {
                 items.unshift({
                     id: newId,
                     category,
+                    genre,
                     code,
                     jan,
                     seriesNo,
@@ -3573,6 +3738,7 @@ function doGet(e) {
                         () => {
                             items = data.items;
                             if (Array.isArray(data.logs)) historyLogs = data.logs;
+                            if (Array.isArray(data.genres)) genresList = data.genres;
                             if (Array.isArray(data.makers)) makersList = data.makers;
                             if (Array.isArray(data.specs)) specsList = data.specs;
                             if (Array.isArray(data.outReasons)) outReasonsList = data.outReasons;
@@ -3664,9 +3830,11 @@ function doGet(e) {
                 () => {
                     items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
                     historyLogs = JSON.parse(JSON.stringify(INITIAL_LOGS));
+                    genresList = [...DEFAULT_GENRES];
                     makersList = [...DEFAULT_MAKERS];
                     specsList = [...DEFAULT_SPECS];
                     outReasonsList = [...DEFAULT_OUT_REASONS];
+                    currentKitGenreFilter = 'ALL';
                     saveData();
                     refreshAllUI();
                     showToast('初期サンプルデータにリセットしました', 'success');
